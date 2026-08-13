@@ -1,0 +1,1155 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>OBZ Exchange · AI Team Admin</title>
+  <style>
+    :root{
+      --bg:#020c1e;--bg2:#071428;--panel:rgba(5,14,32,0.96);
+      --line:rgba(103,232,249,0.14);--text:#f8fafc;--muted:#8baac4;
+      --cyan:#67e8f9;--green:#34d399;--purple:#a855f7;
+      --red:#f87171;--orange:#fb923c;--yellow:#fbbf24;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Inter,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+    /* SIDEBAR */
+    .sidebar{
+      width:240px;flex-shrink:0;
+      background:rgba(3,10,24,0.98);
+      border-right:1px solid var(--line);
+      display:flex;flex-direction:column;
+      padding:0;min-height:100vh;
+      position:sticky;top:0;height:100vh;overflow-y:auto;
+    }
+    .sb-brand{
+      padding:22px 20px 18px;
+      border-bottom:1px solid var(--line);
+    }
+    .sb-logo{font-size:1.2rem;font-weight:900;letter-spacing:0.05em;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .sb-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+    .sb-section{padding:14px 16px 6px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;}
+    .sb-item{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 20px;font-size:13px;font-weight:600;color:var(--muted);
+      cursor:pointer;transition:0.15s;border-left:2px solid transparent;
+    }
+    .sb-item:hover,.sb-item.active{color:var(--cyan);background:rgba(103,232,249,0.06);border-left-color:var(--cyan);}
+    .sb-item .icon{font-size:16px;width:20px;text-align:center;}
+    .sb-badge{margin-left:auto;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;background:rgba(248,113,113,0.18);color:var(--red);}
+    .sb-badge.green{background:rgba(52,211,153,0.18);color:var(--green);}
+    .sb-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);}
+    .ai-status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;box-shadow:0 0 6px var(--green);}
+
+    /* MAIN */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:0 28px;height:56px;
+      background:rgba(3,10,24,0.97);
+      border-bottom:1px solid var(--line);
+      flex-shrink:0;
+    }
+    .tb-title{font-size:1rem;font-weight:700;}
+    .tb-right{display:flex;gap:10px;align-items:center;}
+    .tb-pill{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid rgba(103,232,249,0.24);color:var(--cyan);background:rgba(103,232,249,0.08);}
+    .tb-pill.red{border-color:rgba(248,113,113,0.24);color:var(--red);background:rgba(248,113,113,0.08);}
+    .tb-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);font-weight:700;cursor:pointer;font-size:13px;transition:0.15s;}
+    .tb-btn:hover{border-color:var(--cyan);}
+    .lang-wrap{position:relative;}
+    .lang-select{appearance:none;padding-right:30px;}
+    .lang-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--cyan);font-size:10px;pointer-events:none;}
+    .notice-banner{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(103,232,249,0.08),rgba(168,85,247,0.08));border:1px solid rgba(103,232,249,0.18);margin-bottom:18px;}
+    .notice-badge{flex-shrink:0;padding:4px 10px;border-radius:999px;background:rgba(251,191,36,0.14);border:1px solid rgba(251,191,36,0.24);color:var(--yellow);font-size:11px;font-weight:800;letter-spacing:0.05em;}
+    .notice-title{font-size:14px;font-weight:800;margin-bottom:4px;color:var(--text);}
+    .notice-text{font-size:13px;line-height:1.6;color:var(--muted);}
+    .content{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:20px;}
+    .content::-webkit-scrollbar{width:4px;}
+    .content::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px;}
+
+    /* CARDS */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+    .kpi{
+      padding:18px 20px;border-radius:16px;
+      background:var(--panel);border:1px solid var(--line);
+      position:relative;overflow:hidden;
+    }
+    .kpi::after{content:'';position:absolute;right:-16px;bottom:-16px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(103,232,249,0.1),transparent 70%);}
+    .kpi .k-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;}
+    .kpi .k-val{font-size:1.7rem;font-weight:900;}
+    .kpi .k-chg{font-size:12px;margin-top:5px;font-weight:700;}
+    .kpi .k-chg.up{color:var(--green);}
+    .kpi .k-chg.dn{color:var(--red);}
+    .kpi .k-icon{position:absolute;top:16px;right:16px;font-size:22px;opacity:0.6;}
+
+    /* GRID LAYOUTS */
+    .two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;}
+    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 20px;}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+    .panel-head h3{font-size:14px;font-weight:700;color:var(--cyan);}
+    .panel-head .ph-right{display:flex;gap:8px;align-items:center;}
+    .tag{padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;}
+    .tag.green{background:rgba(52,211,153,0.14);color:var(--green);}
+    .tag.red{background:rgba(248,113,113,0.14);color:var(--red);}
+    .tag.cyan{background:rgba(103,232,249,0.12);color:var(--cyan);}
+    .tag.orange{background:rgba(251,146,60,0.14);color:var(--orange);}
+    .tag.purple{background:rgba(168,85,247,0.14);color:var(--purple);}
+
+    /* TABLES */
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{text-align:left;padding:8px 10px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--line);}
+    td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,0.04);}
+    tr:hover td{background:rgba(103,232,249,0.03);}
+    tr:last-child td{border-bottom:0;}
+
+    /* AI CHAT LOG */
+    .chat-log{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;}
+    .chat-log::-webkit-scrollbar{width:3px;}
+    .chat-log::-webkit-scrollbar-thumb{background:var(--line);}
+    .log-item{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);font-size:12px;}
+    .log-item .li-head{display:flex;justify-content:space-between;margin-bottom:4px;}
+    .log-item .li-user{color:var(--cyan);font-weight:700;}
+    .log-item .li-time{color:var(--muted);}
+    .log-item .li-q{color:var(--text);}
+    .log-item .li-a{color:var(--muted);margin-top:4px;}
+
+    /* CHART */
+    .mini-spark{height:60px;display:flex;align-items:flex-end;gap:3px;}
+    .spark-bar{flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:height 0.3s;}
+
+    /* TEAM */
+    .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .team-card{padding:16px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid var(--line);text-align:center;}
+    .team-avatar{width:48px;height:48px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+    .team-name{font-weight:700;font-size:13px;}
+    .team-role{font-size:11px;color:var(--muted);margin-top:3px;}
+    .team-stat{font-size:12px;margin-top:8px;color:var(--green);font-weight:700;}
+
+    /* ALERTS */
+    .alert-list{display:flex;flex-direction:column;gap:8px;}
+    .alert-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);font-size:12px;}
+    .alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+    /* PROGRESS */
+    .progress-row{margin-bottom:14px;}
+    .pr-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+    .pr-bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;}
+    .pr-fill{height:100%;border-radius:3px;}
+
+    /* TOGGLE */
+    .toggle-switch{width:36px;height:20px;border-radius:10px;background:rgba(255,255,255,0.1);position:relative;cursor:pointer;flex-shrink:0;transition:0.2s;}
+    .toggle-switch.on{background:var(--green);}
+    .toggle-switch::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;left:3px;transition:0.2s;}
+    .toggle-switch.on::after{left:19px;}
+
+    @media(max-width:1100px){
+      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+      .three-col{grid-template-columns:1fr;}
+      .two-col{grid-template-columns:1fr;}
+    }
+      /* ─── MOBILE RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-actions { gap: 6px; }
+      .nav-actions .btn { padding: 6px 10px; font-size: 12px; }
+      .hero { padding: 110px 16px 48px; }
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 0.95rem; }
+      .hero-cta { flex-direction: column; align-items: stretch; gap: 10px; }
+      .hero-cta .btn-primary, .hero-cta .btn-outline { padding: 13px 20px; font-size: 15px; }
+      .price-strip { gap: 10px; }
+      .price-card { min-width: 140px; padding: 12px 16px; }
+      .stats-band { flex-direction: column; }
+      .stat-item { max-width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
+      .markets-section { padding: 24px 14px; }
+      .market-table-head { flex-direction: column; gap: 10px; align-items: flex-start; }
+      .market-tabs { flex-wrap: wrap; }
+      table { font-size: 12px; }
+      th, td { padding: 8px 8px; }
+      .features-grid { grid-template-columns: 1fr; gap: 14px; }
+      .trade-preview { grid-template-columns: 1fr; gap: 24px; }
+      .fees-grid { grid-template-columns: 1fr; gap: 14px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      section { padding: 48px 16px; }
+      .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .kpi .val { font-size: 1.2rem; }
+      .grid-2, .grid-3, .grid-2b, .two-col, .three-col { grid-template-columns: 1fr !important; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .miner-item { flex-wrap: wrap; }
+      .wc-row { flex-direction: column; }
+      .wc-actions { flex-wrap: wrap; }
+      .wbtn { flex: 1; min-width: 100px; }
+      .withdraw-card { padding: 16px; }
+      .page { padding: 20px 14px 60px; }
+      .page-hero { padding: 40px 16px 32px; }
+      .shield-icon { font-size: 56px; }
+      .overall-bar { gap: 12px; }
+      .score-ring { width: 100px; height: 100px; }
+      .score-ring svg { width: 100px; height: 100px; }
+      .score-val { font-size: 1.2rem; }
+      .protect-card { padding: 16px; }
+      .topbar { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 52px; gap: 6px; padding-top: 6px; padding-bottom: 6px; }
+      .pair-meta { display: none; }
+      .tb-title { font-size: 0.9rem; }
+      .trade-layout { grid-template-columns: 1fr !important; grid-template-rows: auto !important; height: auto; overflow: visible; }
+      .book-pane { display: none; }
+      .form-pane { grid-column: 1; grid-row: auto; height: auto; }
+      .bottom-pane { grid-column: 1; grid-row: auto; height: 200px; }
+      .chart-pane { grid-column: 1; grid-row: auto; height: 280px; }
+      .pane { display: none; }
+      .chart-area { height: 220px; }
+      .sidebar { width: 100%; min-height: auto; position: relative; height: auto; }
+      .main { width: 100%; }
+      .app { flex-direction: column; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ai-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
+      .ai-fab { bottom: 16px; right: 16px; width: 50px; height: 50px; font-size: 22px; }
+    }
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.7rem; }
+      .nav-brand { font-size: 1.1rem; }
+      .overall-bar { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">OBZ X · Admin</div>
+    <div class="sb-sub">AI Operations Center</div>
+  </div>
+
+  <div class="sb-section">Overview</div>
+  <div class="sb-item active"><span class="icon">🏠</span> Dashboard</div>
+  <div class="sb-item"><span class="icon">📊</span> Analytics</div>
+  <div class="sb-item"><span class="icon">⚡</span> Live Feed</div>
+
+  <div class="sb-section">AI Team</div>
+  <div class="sb-item"><span class="icon">🤖</span> AI Agents <span class="sb-badge green">6 Live</span></div>
+  <div class="sb-item"><span class="icon">💬</span> Chat Log <span class="sb-badge">124</span></div>
+  <div class="sb-item"><span class="icon">🧠</span> Model Config</div>
+  <div class="sb-item"><span class="icon">📈</span> AI Performance</div>
+
+  <div class="sb-section">Exchange</div>
+  <div class="sb-item"><span class="icon">👥</span> Users <span class="sb-badge green">2.4K</span></div>
+  <div class="sb-item"><span class="icon">📋</span> Orders</div>
+  <div class="sb-item" onclick="location.href='leaderboard.html'"><span class="icon">🏆</span> Leaderboard</div>
+  <div class="sb-item"><span class="icon">💰</span> Revenue</div>
+  <div class="sb-item"><span class="icon">🛡️</span> Security <span class="sb-badge">3</span></div>
+
+  <div class="sb-section">System</div>
+  <div class="sb-item"><span class="icon">⚙️</span> Settings</div>
+  <div class="sb-item"><span class="icon">📄</span> Logs</div>
+  <div class="sb-item"><span class="icon">🔔</span> Alerts</div>
+
+  <div class="sb-footer">
+    <div><span class="ai-status-dot"></span>All systems operational</div>
+    <div style="margin-top:6px;font-size:11px;">v2.4.1 · <a href="index.html" style="color:var(--cyan);text-decoration:none;">← Back to site</a></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title">AI Operations Dashboard</div>
+    <div class="tb-right">
+      <div class="tb-pill" style="border-color:rgba(52,211,153,0.28);color:var(--green);background:rgba(52,211,153,0.12);">BSC TESTNET</div>
+      <div class="lang-wrap">
+        <select class="tb-btn lang-select" id="langSelect" aria-label="Language settings">
+          <option value="th" selected>ภาษาไทย</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <button class="tb-btn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy Contract</button>
+      <button class="tb-btn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
+      <button class="tb-btn" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>
+      <div class="tb-pill" id="serverTime">Loading...</div>
+      <div class="tb-pill">🟢 All Systems OK</div>
+      <button class="tb-btn">⬇ Export Report</button>
+      <button class="tb-btn" onclick="location.href='index.html'">← Exchange</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPI ROW -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="k-icon">👥</div>
+        <div class="k-lbl">Active Users (24h)</div>
+        <div class="k-val" id="kpi-users">2,418</div>
+        <div class="k-chg up" id="kpi-users-chg">▲ +18.4% vs yesterday</div>
+      </div>
+      <div class="kpi">
+        <div class="k-icon">💬</div>
+        <div class="k-lbl">AI Conversations (24h)</div>
+        <div class="k-val" id="kpi-chats">1,284</div>
+        <div class="k-chg up">▲ +32.1% this week</div>
+      </div>
+      <div class="kpi">
+        <div class="k-icon">💰</div>
+        <div class="k-lbl">Trading Volume (24h)</div>
+        <div class="k-val" id="kpi-vol">$4.82B</div>
+        <div class="k-chg up">▲ +7.2% vs avg</div>
+      </div>
+      <div class="kpi">
+        <div class="k-icon">⚡</div>
+        <div class="k-lbl">AI Response Time</div>
+        <div class="k-val" id="kpi-latency">0.94s</div>
+        <div class="k-chg up">▲ 99.97% uptime</div>
+      </div>
+    </div>
+
+    <!-- ROW 2 -->
+    <div class="two-col">
+
+      <!-- AI AGENT STATUS -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>🤖 AI Agent Team</h3>
+          <span class="tag cyan">6 / 6 Online</span>
+        </div>
+        <table>
+          <thead><tr><th>Agent</th><th>Role</th><th>Queries</th><th>Accuracy</th><th>Status</th></tr></thead>
+          <tbody id="agentTable">
+            <tr><td><b>OBZ-Alpha</b></td><td>Market Analysis</td><td id="qa1">428</td><td><span style="color:var(--green)">98.2%</span></td><td><span class="tag green">● Live</span></td></tr>
+            <tr><td><b>OBZ-Beta</b></td><td>Trade Support</td><td id="qa2">312</td><td><span style="color:var(--green)">96.8%</span></td><td><span class="tag green">● Live</span></td></tr>
+            <tr><td><b>OBZ-Gamma</b></td><td>Risk Monitor</td><td id="qa3">198</td><td><span style="color:var(--green)">99.1%</span></td><td><span class="tag green">● Live</span></td></tr>
+            <tr><td><b>OBZ-Delta</b></td><td>Wallet Assist</td><td id="qa4">246</td><td><span style="color:var(--yellow)">94.3%</span></td><td><span class="tag green">● Live</span></td></tr>
+            <tr><td><b>OBZ-Epsilon</b></td><td>Fraud Detection</td><td id="qa5">64</td><td><span style="color:var(--green)">99.9%</span></td><td><span class="tag green">● Live</span></td></tr>
+            <tr><td><b>OBZ-Zeta</b></td><td>Customer Care</td><td id="qa6">36</td><td><span style="color:var(--green)">97.5%</span></td><td><span class="tag green">● Live</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>🔔 Live Alerts</h3>
+          <span class="tag orange" id="alertCount">3 Active</span>
+        </div>
+        <div class="alert-list" id="alertList">
+          <div class="alert-item">
+            <div class="alert-dot" style="background:var(--orange)"></div>
+            <div><div style="font-weight:700;color:var(--orange)">High Volatility</div><div style="color:var(--muted);margin-top:2px;">BTC +3.2% in 15m — AI flagged</div></div>
+            <div style="margin-left:auto;color:var(--muted);font-size:11px;">2m ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot" style="background:var(--red)"></div>
+            <div><div style="font-weight:700;color:var(--red)">Large Order Detected</div><div style="color:var(--muted);margin-top:2px;">Sell order $2.4M BTC/USDT</div></div>
+            <div style="margin-left:auto;color:var(--muted);font-size:11px;">8m ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot" style="background:var(--yellow)"></div>
+            <div><div style="font-weight:700;color:var(--yellow)">New User Spike</div><div style="color:var(--muted);margin-top:2px;">+142 users in last hour</div></div>
+            <div style="margin-left:auto;color:var(--muted);font-size:11px;">14m ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot" style="background:var(--green)"></div>
+            <div><div style="font-weight:700;color:var(--green)">AI Model Retrained</div><div style="color:var(--muted);margin-top:2px;">OBZ-Alpha accuracy ↑ to 98.2%</div></div>
+            <div style="margin-left:auto;color:var(--muted);font-size:11px;">1h ago</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot" style="background:var(--cyan)"></div>
+            <div><div style="font-weight:700;color:var(--cyan)">System Health OK</div><div style="color:var(--muted);margin-top:2px;">All 6 AI agents online · latency 0.94s</div></div>
+            <div style="margin-left:auto;color:var(--muted);font-size:11px;">2h ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3 -->
+    <div class="three-col">
+
+      <!-- AI CHAT LOG -->
+      <div class="panel" style="grid-column:1/3">
+        <div class="panel-head">
+          <h3>💬 AI Conversation Log (Live)</h3>
+          <div class="ph-right">
+            <span class="tag green">● Recording</span>
+            <button class="tb-btn" style="padding:5px 12px;font-size:12px;">Clear</button>
+          </div>
+        </div>
+        <div class="chat-log" id="chatLog"></div>
+      </div>
+
+      <!-- AI TOPICS -->
+      <div class="panel">
+        <div class="panel-head"><h3>📊 Top AI Topics</h3></div>
+        <div class="progress-row">
+          <div class="pr-head"><span>Market Analysis</span><span style="color:var(--cyan)">38%</span></div>
+          <div class="pr-bar"><div class="pr-fill" style="width:38%;background:linear-gradient(90deg,var(--cyan),var(--purple))"></div></div>
+        </div>
+        <div class="progress-row">
+          <div class="pr-head"><span>Trading Help</span><span style="color:var(--green)">24%</span></div>
+          <div class="pr-bar"><div class="pr-fill" style="width:24%;background:var(--green)"></div></div>
+        </div>
+        <div class="progress-row">
+          <div class="pr-head"><span>Wallet / Connect</span><span style="color:var(--purple)">18%</span></div>
+          <div class="pr-bar"><div class="pr-fill" style="width:18%;background:var(--purple)"></div></div>
+        </div>
+        <div class="progress-row">
+          <div class="pr-head"><span>Coin Advice</span><span style="color:var(--orange)">12%</span></div>
+          <div class="pr-bar"><div class="pr-fill" style="width:12%;background:var(--orange)"></div></div>
+        </div>
+        <div class="progress-row">
+          <div class="pr-head"><span>Fees & Account</span><span style="color:var(--yellow)">8%</span></div>
+          <div class="pr-bar"><div class="pr-fill" style="width:8%;background:var(--yellow)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4 -->
+    <div class="two-col">
+
+      <!-- USER TABLE -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>👥 Recent Users</h3>
+          <span class="tag cyan" id="onlineCount">● 142 Online</span>
+        </div>
+        <table>
+          <thead><tr><th>User</th><th>Joined</th><th>Volume</th><th>AI Queries</th><th>Status</th></tr></thead>
+          <tbody id="userTable">
+            <tr><td><b>trader_0x4f</b></td><td>Today</td><td>$48,200</td><td>12</td><td><span class="tag green">Active</span></td></tr>
+            <tr><td><b>btc_whale88</b></td><td>Yesterday</td><td>$2.4M</td><td>3</td><td><span class="tag green">Active</span></td></tr>
+            <tr><td><b>sol_rider</b></td><td>3d ago</td><td>$8,420</td><td>28</td><td><span class="tag cyan">Trading</span></td></tr>
+            <tr><td><b>obz_staker</b></td><td>1w ago</td><td>$124K</td><td>7</td><td><span class="tag green">Active</span></td></tr>
+            <tr><td><b>defi_queen</b></td><td>1w ago</td><td>$56,800</td><td>41</td><td><span class="tag orange">Staking</span></td></tr>
+            <tr><td><b>anon_0x8c</b></td><td>2w ago</td><td>$320</td><td>2</td><td><span class="tag red">Inactive</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- AI SETTINGS -->
+      <div class="panel">
+        <div class="panel-head"><h3>⚙️ AI Agent Controls</h3></div>
+        <div class="notice-banner" id="maintenanceNotice">
+          <div class="notice-badge">NOTICE</div>
+          <div>
+            <div class="notice-title" id="maintenanceNoticeTitle">คำเตือนเกี่ยวกับโหมดบำรุงรักษา</div>
+            <div class="notice-text" id="maintenanceNoticeText">เมื่อเปิดใช้งานโหมดบำรุงรักษา ระบบจะระงับการทำงานของ AI agents ทั้งหมดเป็นการชั่วคราว เพื่อความมั่นคงปลอดภัยระหว่างการปรับปรุงหรือแก้ไขระบบ การทำงานของผู้ใช้บางส่วนอาจถูกจำกัดจนกว่าจะยกเลิกโหมดดังกล่าว</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div><div style="font-weight:700;font-size:13px;">Market Analysis AI</div><div style="font-size:11px;color:var(--muted)">OBZ-Alpha · GPT-based</div></div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div><div style="font-weight:700;font-size:13px;">Trade Support Bot</div><div style="font-size:11px;color:var(--muted)">OBZ-Beta · Fine-tuned</div></div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div><div style="font-weight:700;font-size:13px;">Fraud Detection</div><div style="font-size:11px;color:var(--muted)">OBZ-Epsilon · Real-time</div></div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div><div style="font-weight:700;font-size:13px;">Auto Risk Alert</div><div style="font-size:11px;color:var(--muted)">Threshold: ±3% in 15m</div></div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div><div style="font-weight:700;font-size:13px;">User Onboarding AI</div><div style="font-size:11px;color:var(--muted)">Welcome flow assistant</div></div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div><div style="font-weight:700;font-size:13px;" id="maintenanceTitle">โหมดบำรุงรักษา</div><div style="font-size:11px;color:var(--muted)" id="maintenanceSubtitle">ระงับการทำงานของ AI agents ทั้งหมดชั่วคราว</div></div>
+            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel" style="grid-column:1/3">
+        <div class="panel-head">
+          <h3>💸 Mining Payout Queue</h3>
+          <div class="ph-right">
+            <span class="tag orange" id="payoutQueueCount">PENDING 0</span>
+            <button class="tb-btn" id="refreshPayoutBtn" style="padding:5px 12px;font-size:12px;">Refresh</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 220px 140px 120px auto auto auto auto;gap:10px;margin-bottom:12px;align-items:center;">
+          <input id="payoutApiBase" placeholder="API Base URL" style="padding:9px 12px;border:1px solid rgba(255,255,255,0.12);border-radius:10px;background:rgba(255,255,255,0.04);color:var(--text);" />
+          <input id="adminApiKey" placeholder="Admin API Key (one-time)" style="padding:9px 12px;border:1px solid rgba(255,255,255,0.12);border-radius:10px;background:rgba(255,255,255,0.04);color:var(--text);" />
+          <select id="payoutStatusFilter" style="padding:9px 12px;border:1px solid rgba(255,255,255,0.12);border-radius:10px;background:rgba(255,255,255,0.04);color:var(--text);">
+            <option value="PENDING">PENDING</option>
+            <option value="APPROVED">APPROVED</option>
+            <option value="PAID">PAID</option>
+            <option value="REJECTED">REJECTED</option>
+            <option value="">ALL</option>
+          </select>
+          <select id="payoutRangeFilter" style="padding:9px 12px;border:1px solid rgba(255,255,255,0.12);border-radius:10px;background:rgba(255,255,255,0.04);color:var(--text);">
+            <option value="24h">24h</option>
+            <option value="7d" selected>7d</option>
+            <option value="30d">30d</option>
+            <option value="all">ALL</option>
+          </select>
+          <button class="tb-btn" id="adminLoginBtn" style="padding:8px 12px;font-size:12px;">🔐 Login Session</button>
+          <button class="tb-btn" id="adminRefreshSessionBtn" style="padding:8px 12px;font-size:12px;">♻ Refresh Session</button>
+          <button class="tb-btn" id="adminLogoutBtn" style="padding:8px 12px;font-size:12px;">🚪 Logout</button>
+          <span class="tag red" id="adminSessionStatus">Not Authenticated</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;">
+          <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div style="font-size:11px;color:var(--muted);">Outstanding</div>
+            <div id="sumOutstanding" style="font-weight:900;color:var(--orange);margin-top:4px;">0.000000 OBZ</div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div style="font-size:11px;color:var(--muted);">Pending</div>
+            <div id="sumPending" style="font-weight:900;color:var(--orange);margin-top:4px;">0.000000 OBZ</div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div style="font-size:11px;color:var(--muted);">Approved</div>
+            <div id="sumApproved" style="font-weight:900;color:var(--green);margin-top:4px;">0.000000 OBZ</div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div style="font-size:11px;color:var(--muted);">Paid</div>
+            <div id="sumPaid" style="font-weight:900;color:var(--cyan);margin-top:4px;">0.000000 OBZ</div>
+          </div>
+          <div style="padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
+            <div style="font-size:11px;color:var(--muted);">Total Mined</div>
+            <div id="sumTotalMined" style="font-weight:900;color:var(--purple);margin-top:4px;">0.000000 OBZ</div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Miner</th><th>Wallet</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
+          <tbody id="payoutQueueBody">
+            <tr><td colspan="7" style="color:var(--muted)">ยังไม่มีข้อมูล</td></tr>
+          </tbody>
+        </table>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+          <button class="tb-btn" id="exportQueueCsvBtn" style="padding:6px 12px;font-size:12px;">⬇ Export Queue CSV</button>
+        </div>
+
+        <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;">
+          <div class="panel-head" style="margin-bottom:10px;">
+            <h3>🧾 Payout Audit Log</h3>
+            <span class="tag cyan">ล่าสุด 120 รายการ</span>
+          </div>
+          <table>
+            <thead><tr><th>Time</th><th>Req ID</th><th>Miner</th><th>Actor</th><th>Transition</th><th>Tx Hash</th><th>Note</th></tr></thead>
+            <tbody id="payoutAuditBody">
+              <tr><td colspan="7" style="color:var(--muted)">ยังไม่มีข้อมูล</td></tr>
+            </tbody>
+          </table>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <button class="tb-btn" id="exportAuditCsvBtn" style="padding:6px 12px;font-size:12px;">⬇ Export Audit CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM ROW -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>👨‍💻 AI Team Members</h3>
+        <span class="tag green">All Online</span>
+      </div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,rgba(103,232,249,0.2),rgba(168,85,247,0.2))">🧠</div>
+          <div class="team-name">OBZ-Alpha</div>
+          <div class="team-role">Chief Market Analyst AI</div>
+          <div class="team-stat" id="ts1">428 queries today</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,rgba(52,211,153,0.2),rgba(103,232,249,0.2))">📊</div>
+          <div class="team-name">OBZ-Beta</div>
+          <div class="team-role">Trade Support Specialist</div>
+          <div class="team-stat" id="ts2">312 queries today</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(248,113,113,0.2))">🛡️</div>
+          <div class="team-name">OBZ-Gamma</div>
+          <div class="team-role">Risk & Compliance Monitor</div>
+          <div class="team-stat" id="ts3">198 alerts today</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,rgba(251,146,60,0.2),rgba(251,191,36,0.2))">🔗</div>
+          <div class="team-name">OBZ-Delta</div>
+          <div class="team-role">Wallet & DeFi Assistant</div>
+          <div class="team-stat" id="ts4">246 connections</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,rgba(248,113,113,0.2),rgba(251,146,60,0.2))">🔍</div>
+          <div class="team-name">OBZ-Epsilon</div>
+          <div class="team-role">Fraud Detection Engine</div>
+          <div class="team-stat" style="color:var(--red)">3 flags today</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,rgba(103,232,249,0.15),rgba(52,211,153,0.15))">💬</div>
+          <div class="team-name">OBZ-Zeta</div>
+          <div class="team-role">Customer Care Lead</div>
+          <div class="team-stat">98% satisfaction</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<script src="app-config.js"></script>
+<script>
+  /* ── live clock ── */
+  function updateClock(){
+    const now=new Date();
+    document.getElementById('serverTime').textContent=
+      now.toUTCString().replace('GMT','UTC').split(' ').slice(0,5).join(' ');
+  }
+  updateClock(); setInterval(updateClock,1000);
+
+  /* ── KPI live updates ── */
+  let userCount=2418, chatCount=1284;
+  setInterval(()=>{
+    userCount+=Math.floor(Math.random()*3);
+    chatCount+=Math.floor(Math.random()*2);
+    document.getElementById('kpi-users').textContent=userCount.toLocaleString();
+    document.getElementById('kpi-chats').textContent=chatCount.toLocaleString();
+    document.getElementById('kpi-latency').textContent=(0.8+Math.random()*0.3).toFixed(2)+'s';
+    document.getElementById('onlineCount').textContent='● '+(130+Math.floor(Math.random()*30))+' Online';
+  },2800);
+
+  /* ── agent query counts ── */
+  const agentIds=[['qa1',428],['qa2',312],['qa3',198],['qa4',246],['qa5',64],['qa6',36]];
+  const teamIds=[['ts1','queries today'],['ts2','queries today'],['ts3','alerts today'],['ts4','connections']];
+  setInterval(()=>{
+    agentIds.forEach(([id,base])=>{
+      const el=document.getElementById(id);
+      if(el) el.textContent=parseInt(el.textContent)+(Math.random()>0.6?1:0);
+    });
+  },3000);
+
+  /* ── AI chat log ── */
+  const sampleConvos=[
+    {user:'trader_0x4f',q:'วิเคราะห์ BTC ตอนนี้',a:'OBZ-Alpha: Strong buy signal detected — RSI 68.4, above VWAP',agent:'OBZ-Alpha'},
+    {user:'btc_whale88',q:'ค่าธรรมเนียม futures เท่าไหร่',a:'OBZ-Beta: Futures taker 0.04%, maker 0.02%. Pro tier ลด 60%',agent:'OBZ-Beta'},
+    {user:'sol_rider',q:'วิธี connect Phantom wallet',a:'OBZ-Delta: Click 🔗 Wallet → Phantom → Approve in extension',agent:'OBZ-Delta'},
+    {user:'obz_staker',q:'OBZ token staking APY เท่าไหร่',a:'OBZ-Zeta: Current APY ~18% · lock 30 days · rewards daily',agent:'OBZ-Zeta'},
+    {user:'defi_queen',q:'แนะนำ coin น่าลงทุนสัปดาห์นี้',a:'OBZ-Alpha: SOL +momentum, OBZ +12.4% this week. DYOR.',agent:'OBZ-Alpha'},
+    {user:'anon_0x8c',q:'วิธีสมัคร account',a:'OBZ-Zeta: Click Get Started → Email + Password → Verify → Done!',agent:'OBZ-Zeta'},
+    {user:'trader_kz99',q:'BTC จะขึ้นหรือลงต่อ',a:'OBZ-Alpha: Bias long above $61,200. Target $62,400 if holds.',agent:'OBZ-Alpha'},
+    {user:'moon_lambo',q:'leverage 100x ปลอดภัยไหม',a:'OBZ-Gamma: ⚠️ High risk. แนะนำ max 10x สำหรับ beginner.',agent:'OBZ-Gamma'},
+  ];
+  const logEl=document.getElementById('chatLog');
+  let logIdx=0;
+  function addLogItem(){
+    const conv=sampleConvos[logIdx%sampleConvos.length];
+    const div=document.createElement('div');
+    div.className='log-item';
+    const now=new Date();
+    div.innerHTML=`<div class="li-head"><span class="li-user">${conv.user}</span><span class="li-time">${now.toLocaleTimeString('th-TH')} · <span style="color:var(--purple)">${conv.agent}</span></span></div><div class="li-q">💬 ${conv.q}</div><div class="li-a">🤖 ${conv.a}</div>`;
+    logEl.insertBefore(div,logEl.firstChild);
+    if(logEl.children.length>12) logEl.removeChild(logEl.lastChild);
+    logIdx++;
+  }
+  addLogItem(); addLogItem(); addLogItem();
+  setInterval(addLogItem,4200);
+
+  /* ── sidebar nav ── */
+  const langSelect = document.getElementById('langSelect');
+  const PAYOUT_API_BASE_KEY = 'obzMiningApiBase';
+  const PAYOUT_ADMIN_KEY = 'obzAdminApiKey';
+  const PAYOUT_ADMIN_SESSION_KEY = 'obzAdminSessionToken';
+  const PAYOUT_ADMIN_SESSION_EXP_KEY = 'obzAdminSessionExp';
+  let adminSessionToken = localStorage.getItem(PAYOUT_ADMIN_SESSION_KEY) || '';
+  let adminSessionExpiresAt = Number(localStorage.getItem(PAYOUT_ADMIN_SESSION_EXP_KEY) || 0);
+  let latestQueueRows = [];
+  let latestAuditRows = [];
+
+  function defaultApiBase(){
+    const configured = (window.OBZ_CONFIG && typeof window.OBZ_CONFIG.apiBase === 'string')
+      ? window.OBZ_CONFIG.apiBase.trim()
+      : '';
+    if(configured){ return configured.replace(/\/$/, ''); }
+    const stored = localStorage.getItem(PAYOUT_API_BASE_KEY);
+    if(stored){ return stored; }
+    if(location.hostname === 'localhost' || location.hostname === '127.0.0.1'){
+      return location.origin;
+    }
+    return 'http://127.0.0.1:8080';
+  }
+
+  function fmtDate(ts){
+    if(!ts){ return '-'; }
+    return new Date(ts * 1000).toLocaleString('th-TH', { hour12: false });
+  }
+
+  function isValidTxHash(txHash){
+    return /^0x[a-fA-F0-9]{64}$/.test(txHash || '');
+  }
+
+  function shortTx(txHash){
+    if(!txHash){ return '-'; }
+    if(txHash.length < 14){ return txHash; }
+    return txHash.slice(0, 8) + '...' + txHash.slice(-6);
+  }
+
+  function copyTxHash(txHash){
+    if(!txHash){
+      window.alert('ไม่มี tx hash ในรายการนี้');
+      return;
+    }
+    navigator.clipboard.writeText(txHash)
+      .then(() => window.alert('คัดลอก tx hash แล้ว'))
+      .catch(() => window.alert('คัดลอกไม่สำเร็จ'));
+  }
+
+  function getRangeWindow(){
+    const mode = document.getElementById('payoutRangeFilter').value;
+    const nowSec = Math.floor(Date.now() / 1000);
+    if(mode === '24h'){
+      return { fromTs: nowSec - 86400, toTs: nowSec };
+    }
+    if(mode === '7d'){
+      return { fromTs: nowSec - 86400 * 7, toTs: nowSec };
+    }
+    if(mode === '30d'){
+      return { fromTs: nowSec - 86400 * 30, toTs: nowSec };
+    }
+    return { fromTs: null, toTs: null };
+  }
+
+  function csvEscape(v){
+    const s = String(v ?? '');
+    if(/[",\n]/.test(s)){
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  function downloadCsv(filename, headers, rows){
+    const lines = [];
+    lines.push(headers.map(csvEscape).join(','));
+    rows.forEach((r) => {
+      lines.push(r.map(csvEscape).join(','));
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function adminApi(path, options, allowAutoRelogin = true){
+    const base = document.getElementById('payoutApiBase').value.trim().replace(/\/$/, '');
+    const res = await fetch(base + path, options);
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = {};
+    }
+    if(!res.ok){
+      const detail = data.detail || ('HTTP ' + res.status);
+      if(
+        allowAutoRelogin &&
+        res.status === 401 &&
+        (String(detail).includes('invalid admin session') || String(detail).includes('admin session expired'))
+      ){
+        const reloginOk = await tryAutoRelogin();
+        if(reloginOk){
+          return adminApi(path, options, false);
+        }
+      }
+      throw new Error(detail);
+    }
+    return data;
+  }
+
+  function isAdminSessionActive(){
+    return !!adminSessionToken && Date.now() < adminSessionExpiresAt;
+  }
+
+  function updateAdminSessionUi(){
+    const el = document.getElementById('adminSessionStatus');
+    if(isAdminSessionActive()){
+      const leftSec = Math.max(0, Math.floor((adminSessionExpiresAt - Date.now()) / 1000));
+      el.className = 'tag green';
+      el.textContent = 'Session ' + leftSec + 's';
+    } else {
+      el.className = 'tag red';
+      el.textContent = 'Not Authenticated';
+    }
+  }
+
+  async function tryAutoRelogin(){
+    const key = document.getElementById('adminApiKey').value.trim() || localStorage.getItem(PAYOUT_ADMIN_KEY) || '';
+    if(!key){
+      adminSessionToken = '';
+      adminSessionExpiresAt = 0;
+      localStorage.removeItem(PAYOUT_ADMIN_SESSION_KEY);
+      localStorage.removeItem(PAYOUT_ADMIN_SESSION_EXP_KEY);
+      updateAdminSessionUi();
+      return false;
+    }
+    try {
+      const data = await adminApi('/api/admin/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_key: key }),
+      }, false);
+      adminSessionToken = data.admin_session;
+      adminSessionExpiresAt = Date.now() + (Number(data.expires_in || 0) * 1000);
+      localStorage.setItem(PAYOUT_ADMIN_SESSION_KEY, adminSessionToken);
+      localStorage.setItem(PAYOUT_ADMIN_SESSION_EXP_KEY, String(adminSessionExpiresAt));
+      localStorage.setItem(PAYOUT_ADMIN_KEY, key);
+      updateAdminSessionUi();
+      return true;
+    } catch (_) {
+      adminSessionToken = '';
+      adminSessionExpiresAt = 0;
+      localStorage.removeItem(PAYOUT_ADMIN_SESSION_KEY);
+      localStorage.removeItem(PAYOUT_ADMIN_SESSION_EXP_KEY);
+      updateAdminSessionUi();
+      return false;
+    }
+  }
+
+  async function loginAdminSession(){
+    const key = document.getElementById('adminApiKey').value.trim();
+    if(!key){
+      window.alert('กรอก Admin API Key ก่อน');
+      return;
+    }
+    try {
+      const data = await adminApi('/api/admin/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_key: key }),
+      });
+      adminSessionToken = data.admin_session;
+      adminSessionExpiresAt = Date.now() + (Number(data.expires_in || 0) * 1000);
+      localStorage.setItem(PAYOUT_ADMIN_SESSION_KEY, adminSessionToken);
+      localStorage.setItem(PAYOUT_ADMIN_SESSION_EXP_KEY, String(adminSessionExpiresAt));
+      localStorage.setItem(PAYOUT_ADMIN_KEY, key);
+      updateAdminSessionUi();
+      refreshPayoutQueue();
+    } catch (err) {
+      window.alert('Login session ไม่สำเร็จ: ' + err.message);
+    }
+  }
+
+  async function refreshAdminSession(){
+    if(!isAdminSessionActive()){
+      const ok = await tryAutoRelogin();
+      if(!ok){
+        window.alert('ไม่มี session ให้ refresh กรุณา Login ใหม่');
+        return;
+      }
+      refreshPayoutQueue();
+      return;
+    }
+    try {
+      const data = await adminApi('/api/admin/session/refresh?admin_session=' + encodeURIComponent(adminSessionToken), {
+        method: 'POST',
+      }, false);
+      adminSessionExpiresAt = Date.now() + (Number(data.expires_in || 0) * 1000);
+      localStorage.setItem(PAYOUT_ADMIN_SESSION_EXP_KEY, String(adminSessionExpiresAt));
+      updateAdminSessionUi();
+    } catch (err) {
+      window.alert('Refresh session ไม่สำเร็จ: ' + err.message);
+    }
+  }
+
+  async function logoutAdminSession(){
+    try {
+      if(isAdminSessionActive()){
+        await adminApi('/api/admin/session/logout?admin_session=' + encodeURIComponent(adminSessionToken), {
+          method: 'POST',
+        }, false);
+      }
+    } catch (_) {
+      // Ignore server-side errors and always clear client session.
+    }
+    adminSessionToken = '';
+    adminSessionExpiresAt = 0;
+    latestQueueRows = [];
+    latestAuditRows = [];
+    localStorage.removeItem(PAYOUT_ADMIN_SESSION_KEY);
+    localStorage.removeItem(PAYOUT_ADMIN_SESSION_EXP_KEY);
+    updateAdminSessionUi();
+    document.getElementById('payoutQueueBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ล็อกเอาต์แล้ว</td></tr>';
+    document.getElementById('payoutAuditBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ล็อกเอาต์แล้ว</td></tr>';
+  }
+
+  async function refreshPayoutSummary(){
+    if(!isAdminSessionActive()){
+      return;
+    }
+    try {
+      const summary = await adminApi('/api/mining/payout/summary?admin_session=' + encodeURIComponent(adminSessionToken));
+      document.getElementById('sumOutstanding').textContent = Number(summary.outstanding_amount || 0).toFixed(6) + ' OBZ';
+      document.getElementById('sumPending').textContent = Number(summary.pending_amount || 0).toFixed(6) + ' OBZ';
+      document.getElementById('sumApproved').textContent = Number(summary.approved_amount || 0).toFixed(6) + ' OBZ';
+      document.getElementById('sumPaid').textContent = Number(summary.paid_amount || 0).toFixed(6) + ' OBZ';
+      document.getElementById('sumTotalMined').textContent = Number(summary.total_mined_amount || 0).toFixed(6) + ' OBZ';
+    } catch (err) {
+      console.warn('refreshPayoutSummary error:', err.message);
+    }
+  }
+
+  async function refreshPayoutAudit(){
+    if(!isAdminSessionActive()){
+      return;
+    }
+    const body = document.getElementById('payoutAuditBody');
+    const range = getRangeWindow();
+    try {
+      let query = '/api/mining/payout/audit?admin_session=' + encodeURIComponent(adminSessionToken) + '&limit=120';
+      if(range.fromTs !== null){ query += '&from_ts=' + encodeURIComponent(range.fromTs); }
+      if(range.toTs !== null){ query += '&to_ts=' + encodeURIComponent(range.toTs); }
+      const data = await adminApi(query);
+      const items = data.items || [];
+      latestAuditRows = items.slice();
+      body.innerHTML = '';
+      if(!items.length){
+        body.innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ยังไม่มีข้อมูล</td></tr>';
+        return;
+      }
+      items.forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td style="color:var(--muted)">' + fmtDate(row.changed_at) + '</td>' +
+          '<td>#' + row.payout_request_id + '</td>' +
+          '<td>' + row.miner_id + '</td>' +
+          '<td style="color:var(--muted)">' + (row.actor || '-') + '</td>' +
+          '<td><span class="tag purple">' + (row.from_status || '-') + ' → ' + row.to_status + '</span></td>' +
+          '<td style="font-family:monospace;color:var(--muted)">' + shortTx(row.tx_hash) + (row.tx_hash ? ' <button class="tb-btn" style="padding:2px 7px;font-size:11px;" onclick="copyTxHash(\'' + row.tx_hash + '\')">Copy</button>' : '') + '</td>' +
+          '<td style="color:var(--muted)">' + (row.note || '-') + '</td>';
+        if(row.tx_hash){
+          tr.title = row.tx_hash;
+        }
+        body.appendChild(tr);
+      });
+    } catch (err) {
+      body.innerHTML = '<tr><td colspan="7" style="color:var(--red)">โหลด audit log ไม่สำเร็จ: ' + err.message + '</td></tr>';
+    }
+  }
+
+  function exportQueueCsv(){
+    if(!latestQueueRows.length){
+      window.alert('ไม่มีข้อมูล queue ให้ export');
+      return;
+    }
+    const rows = latestQueueRows.map((r) => [
+      r.id,
+      r.miner_id,
+      r.wallet_address,
+      Number(r.amount || 0).toFixed(6),
+      r.status,
+      fmtDate(r.requested_at),
+      r.tx_hash || '',
+      r.note || '',
+    ]);
+    downloadCsv('payout_queue.csv', ['id','miner_id','wallet_address','amount_obz','status','requested_at','tx_hash','note'], rows);
+  }
+
+  function exportAuditCsv(){
+    if(!latestAuditRows.length){
+      window.alert('ไม่มีข้อมูล audit ให้ export');
+      return;
+    }
+    const rows = latestAuditRows.map((r) => [
+      r.id,
+      r.payout_request_id,
+      r.miner_id,
+      r.actor || '',
+      r.from_status || '',
+      r.to_status,
+      r.tx_hash || '',
+      r.note || '',
+      fmtDate(r.changed_at),
+    ]);
+    downloadCsv('payout_audit.csv', ['id','payout_request_id','miner_id','actor','from_status','to_status','tx_hash','note','changed_at'], rows);
+  }
+
+  async function refreshPayoutQueue(){
+    const status = document.getElementById('payoutStatusFilter').value;
+    const range = getRangeWindow();
+    if(!isAdminSessionActive()){
+      const reloginOk = await tryAutoRelogin();
+      if(!reloginOk){
+        document.getElementById('payoutQueueBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ล็อกอิน Admin Session ก่อน</td></tr>';
+        updateAdminSessionUi();
+        return;
+      }
+    }
+    try {
+      let query = '/api/mining/payout/queue?admin_session=' + encodeURIComponent(adminSessionToken) + '&status=' + encodeURIComponent(status) + '&limit=200';
+      if(range.fromTs !== null){ query += '&from_ts=' + encodeURIComponent(range.fromTs); }
+      if(range.toTs !== null){ query += '&to_ts=' + encodeURIComponent(range.toTs); }
+      const data = await adminApi(query);
+      const rows = data.items || [];
+      latestQueueRows = rows.slice();
+      const body = document.getElementById('payoutQueueBody');
+      body.innerHTML = '';
+
+      const pendingCount = rows.filter((x) => x.status === 'PENDING').length;
+      document.getElementById('payoutQueueCount').textContent = 'PENDING ' + pendingCount;
+
+      if(!rows.length){
+        body.innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ไม่พบรายการ</td></tr>';
+        return;
+      }
+
+      rows.forEach((row) => {
+        const tr = document.createElement('tr');
+        const canApproveOrReject = row.status === 'PENDING';
+        const canMarkPaid = row.status === 'APPROVED';
+        tr.innerHTML =
+          '<td>#' + row.id + '</td>' +
+          '<td>' + row.miner_id + '</td>' +
+          '<td style="font-family:monospace;color:var(--muted)">' + row.wallet_address + '</td>' +
+          '<td>' + Number(row.amount || 0).toFixed(6) + ' OBZ</td>' +
+          '<td><span class="tag ' + (row.status === 'PENDING' ? 'orange' : (row.status === 'APPROVED' || row.status === 'PAID' ? 'green' : 'red')) + '">' + row.status + '</span></td>' +
+          '<td style="color:var(--muted)">' + fmtDate(row.requested_at) + '</td>' +
+          '<td>' +
+            (canApproveOrReject
+              ? '<button class="tb-btn" style="padding:4px 9px;font-size:12px;margin-right:6px;" onclick="approvePayout(' + row.id + ')">Approve</button><button class="tb-btn" style="padding:4px 9px;font-size:12px;" onclick="rejectPayout(' + row.id + ')">Reject</button>'
+              : (canMarkPaid
+                ? '<button class="tb-btn" style="padding:4px 9px;font-size:12px;margin-right:6px;" onclick="markPaidPayout(' + row.id + ')">Mark as Paid</button>'
+                : '<span style="color:var(--muted)">-</span>')) +
+            (row.tx_hash ? '<button class="tb-btn" style="padding:4px 9px;font-size:12px;margin-left:6px;" onclick="copyTxHash(\'' + row.tx_hash + '\')">Copy Tx</button>' : '') +
+          '</td>';
+        if(row.tx_hash){
+          tr.title = 'tx hash: ' + row.tx_hash;
+        }
+        body.appendChild(tr);
+      });
+      updateAdminSessionUi();
+      refreshPayoutSummary();
+      refreshPayoutAudit();
+    } catch (err) {
+      updateAdminSessionUi();
+      document.getElementById('payoutQueueBody').innerHTML = '<tr><td colspan="7" style="color:var(--red)">โหลดคิวไม่สำเร็จ: ' + err.message + '</td></tr>';
+    }
+  }
+
+  async function approvePayout(id){
+    const txHash = window.prompt('ใส่ tx hash (ถ้ายังไม่มี เว้นว่างได้)', '');
+    if(txHash === null){ return; }
+    const trimmedHash = txHash.trim();
+    if(trimmedHash && !isValidTxHash(trimmedHash)){
+      window.alert('รูปแบบ tx hash ไม่ถูกต้อง ต้องเป็น 0x + 64 hex');
+      return;
+    }
+    try {
+      await adminApi('/api/mining/payout/' + id + '/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_session: adminSessionToken, tx_hash: trimmedHash, note: 'Approved from admin dashboard' }),
+      });
+      refreshPayoutQueue();
+    } catch (err) {
+      window.alert('Approve ไม่สำเร็จ: ' + err.message);
+    }
+  }
+
+  async function markPaidPayout(id){
+    const txHash = window.prompt('ใส่ tx hash การจ่ายจริง', '0x');
+    if(txHash === null){ return; }
+    if(!txHash.trim()){
+      window.alert('ต้องใส่ tx hash ก่อน mark paid');
+      return;
+    }
+    if(!isValidTxHash(txHash.trim())){
+      window.alert('รูปแบบ tx hash ไม่ถูกต้อง ต้องเป็น 0x + 64 hex');
+      return;
+    }
+    try {
+      await adminApi('/api/mining/payout/' + id + '/mark-paid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_session: adminSessionToken, tx_hash: txHash.trim(), note: 'Marked as paid from admin dashboard' }),
+      });
+      refreshPayoutQueue();
+    } catch (err) {
+      window.alert('Mark as Paid ไม่สำเร็จ: ' + err.message);
+    }
+  }
+
+  async function rejectPayout(id){
+    const note = window.prompt('เหตุผลที่ปฏิเสธ', 'Rejected by admin');
+    if(note === null){ return; }
+    try {
+      await adminApi('/api/mining/payout/' + id + '/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_session: adminSessionToken, note: note }),
+      });
+      refreshPayoutQueue();
+    } catch (err) {
+      window.alert('Reject ไม่สำเร็จ: ' + err.message);
+    }
+  }
+
+  document.getElementById('adminLoginBtn').addEventListener('click', loginAdminSession);
+  document.getElementById('adminRefreshSessionBtn').addEventListener('click', refreshAdminSession);
+  document.getElementById('adminLogoutBtn').addEventListener('click', logoutAdminSession);
+  document.getElementById('refreshPayoutBtn').addEventListener('click', refreshPayoutQueue);
+  document.getElementById('exportQueueCsvBtn').addEventListener('click', exportQueueCsv);
+  document.getElementById('exportAuditCsvBtn').addEventListener('click', exportAuditCsv);
+  document.getElementById('payoutStatusFilter').addEventListener('change', refreshPayoutQueue);
+  document.getElementById('payoutRangeFilter').addEventListener('change', refreshPayoutQueue);
+  document.getElementById('payoutApiBase').addEventListener('change', () => {
+    localStorage.setItem(PAYOUT_API_BASE_KEY, document.getElementById('payoutApiBase').value.trim());
+  });
+  document.getElementById('adminApiKey').addEventListener('change', () => {
+    localStorage.setItem(PAYOUT_ADMIN_KEY, document.getElementById('adminApiKey').value.trim());
+  });
+
+  document.getElementById('payoutApiBase').value = defaultApiBase();
+  document.getElementById('adminApiKey').value = localStorage.getItem(PAYOUT_ADMIN_KEY) || '';
+  updateAdminSessionUi();
+  setInterval(refreshPayoutQueue, 12000);
+  setInterval(refreshPayoutSummary, 12000);
+  setInterval(refreshPayoutAudit, 20000);
+  setInterval(updateAdminSessionUi, 1000);
+
+  langSelect.addEventListener('change', () => {
+    const selected = langSelect.value;
+    const bannerTitle = document.getElementById('maintenanceNoticeTitle');
+    const bannerText = document.getElementById('maintenanceNoticeText');
+    const maintenanceTitle = document.getElementById('maintenanceTitle');
+    const maintenanceSub = document.getElementById('maintenanceSubtitle');
+    if (selected === 'th') {
+      if (bannerTitle) bannerTitle.textContent = 'คำเตือนเกี่ยวกับโหมดบำรุงรักษา';
+      if (bannerText) bannerText.textContent = 'เมื่อเปิดใช้งานโหมดบำรุงรักษา ระบบจะระงับการทำงานของ AI agents ทั้งหมดเป็นการชั่วคราว เพื่อความมั่นคงปลอดภัยระหว่างการปรับปรุงหรือแก้ไขระบบ การทำงานของผู้ใช้บางส่วนอาจถูกจำกัดจนกว่าจะยกเลิกโหมดดังกล่าว';
+      if (maintenanceTitle) maintenanceTitle.textContent = 'โหมดบำรุงรักษา';
+      if (maintenanceSub) maintenanceSub.textContent = 'ระงับการทำงานของ AI agents ทั้งหมดชั่วคราว';
+    } else {
+      if (bannerTitle) bannerTitle.textContent = 'Maintenance Mode Notice';
+      if (bannerText) bannerText.textContent = 'When maintenance mode is enabled, all AI agents are temporarily disabled to keep the system safe during updates or fixes. Some user actions may be limited until the mode is turned off.';
+      if (maintenanceTitle) maintenanceTitle.textContent = 'Maintenance Mode';
+      if (maintenanceSub) maintenanceSub.textContent = 'Temporarily disable all AI agents';
+    }
+  });
+
+  document.querySelectorAll('.sb-item').forEach(item=>{
+    item.addEventListener('click',()=>{
+      document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  refreshPayoutQueue();
+</script>
+</body>
+</html>
+

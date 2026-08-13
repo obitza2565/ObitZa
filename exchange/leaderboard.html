@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>OBZ Exchange · Mining Leaderboard</title>
+  <style>
+    :root{
+      --bg:#020b1b;--panel:rgba(8,18,38,0.95);--line:rgba(103,232,249,0.15);
+      --text:#f8fafc;--muted:#8baac4;--cyan:#67e8f9;--green:#34d399;--purple:#a855f7;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Inter,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    nav{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:0 28px;height:58px;background:rgba(2,11,27,0.96);border-bottom:1px solid var(--line);backdrop-filter:blur(10px);}
+    .brand{font-weight:900;letter-spacing:0.04em;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .links{display:flex;gap:18px;}
+    .links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:700;}
+    .links a.active,.links a:hover{color:var(--cyan);}
+    .page{max-width:1180px;margin:0 auto;padding:28px 20px 60px;}
+    .head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+    .title{font-size:1.6rem;font-weight:900;}
+    .sub{font-size:13px;color:var(--muted);margin-top:4px;}
+    .pill{padding:6px 12px;border-radius:999px;border:1px solid rgba(52,211,153,0.3);color:var(--green);background:rgba(52,211,153,0.1);font-size:12px;font-weight:800;}
+    .controls{display:grid;grid-template-columns:1fr 120px 120px auto;gap:10px;margin-bottom:16px;}
+    .controls input,.controls select{padding:10px 12px;border:1px solid rgba(255,255,255,0.12);border-radius:10px;background:rgba(255,255,255,0.04);color:var(--text);}
+    .controls button{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--cyan),var(--purple));color:#fff;font-weight:800;cursor:pointer;}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+    .card{padding:14px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);}
+    .card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+    .card .val{font-size:1.4rem;font-weight:900;margin-top:6px;}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+    td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.05);}
+    tr:last-child td{border-bottom:0;}
+    .rank{font-weight:900;color:var(--cyan);}
+    .muted{color:var(--muted);}
+    .status{font-size:12px;color:var(--muted);margin-top:10px;}
+    @media(max-width:950px){
+      .grid{grid-template-columns:1fr 1fr;}
+      .controls{grid-template-columns:1fr 1fr;}
+    }
+    @media(max-width:560px){
+      .grid{grid-template-columns:1fr;}
+      .controls{grid-template-columns:1fr;}
+      table{font-size:12px;}
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="brand">OBZ X</div>
+  <div class="links">
+    <a href="index.html">Markets</a>
+    <a href="trade.html">Trade</a>
+    <a href="mining.html">Mining</a>
+    <a href="leaderboard.html" class="active">Leaderboard</a>
+    <a href="admin.html">Admin</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="head">
+    <div>
+      <div class="title">🏆 Public Mining Leaderboard</div>
+      <div class="sub">จัดอันดับนักขุดตามยอด OBZ จริงจากระบบรวม</div>
+    </div>
+    <div class="pill" id="onlinePill">Online: -</div>
+  </div>
+
+  <div class="controls">
+    <input id="apiBase" placeholder="API Base URL"/>
+    <input id="limit" type="number" min="5" max="200" value="50"/>
+    <select id="refreshSec">
+      <option value="5">5s</option>
+      <option value="10" selected>10s</option>
+      <option value="20">20s</option>
+    </select>
+    <button id="refreshBtn">Refresh</button>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="lbl">Total Miners</div><div class="val" id="kMiners">0</div></div>
+    <div class="card"><div class="lbl">24h Rewards</div><div class="val" id="kRewards">0.0000</div></div>
+    <div class="card"><div class="lbl">Avg Recent Hashrate</div><div class="val" id="kHash">0.0 MH/s</div></div>
+    <div class="card"><div class="lbl">Pool Fee</div><div class="val" id="kFee">0.0%</div></div>
+  </div>
+
+  <div class="panel">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Miner ID</th>
+          <th>Wallet</th>
+          <th>Total OBZ</th>
+          <th>Today</th>
+          <th>Avg Hashrate</th>
+          <th>Ticks</th>
+          <th>Last Mined</th>
+        </tr>
+      </thead>
+      <tbody id="boardBody"></tbody>
+    </table>
+    <div class="status" id="statusText">Ready</div>
+  </div>
+</div>
+
+<script src="app-config.js"></script>
+<script>
+  const API_KEY = 'obzMiningApiBase';
+  let timer = null;
+
+  function byId(id){ return document.getElementById(id); }
+  function fmtDate(ts){
+    if(!ts){ return '-'; }
+    return new Date(ts * 1000).toLocaleString('th-TH', { hour12: false });
+  }
+  function cutWallet(wallet){
+    if(!wallet){ return '-'; }
+    if(wallet.length < 12){ return wallet; }
+    return wallet.slice(0, 6) + '...' + wallet.slice(-4);
+  }
+
+  function defaultApiBase(){
+    const configured = (window.OBZ_CONFIG && typeof window.OBZ_CONFIG.apiBase === 'string')
+      ? window.OBZ_CONFIG.apiBase.trim()
+      : '';
+    if(configured){ return configured.replace(/\/$/, ''); }
+    const stored = localStorage.getItem(API_KEY);
+    if(stored){ return stored; }
+    if(location.hostname === 'localhost' || location.hostname === '127.0.0.1'){
+      return location.origin;
+    }
+    return 'http://127.0.0.1:8080';
+  }
+
+  async function apiGet(path){
+    const base = byId('apiBase').value.trim().replace(/\/$/, '');
+    const res = await fetch(base + path);
+    const data = await res.json();
+    if(!res.ok){
+      throw new Error(data.detail || ('HTTP ' + res.status));
+    }
+    return data;
+  }
+
+  async function refreshBoard(){
+    const limit = Math.max(5, Math.min(200, Number(byId('limit').value || 50)));
+    byId('statusText').textContent = 'Loading...';
+    try {
+      const [board, net] = await Promise.all([
+        apiGet('/api/mining/leaderboard?limit=' + limit),
+        apiGet('/api/mining/network'),
+      ]);
+
+      const leaders = board.leaders || [];
+      const tbody = byId('boardBody');
+      tbody.innerHTML = '';
+      if(!leaders.length){
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="8" class="muted">ยังไม่มีข้อมูลนักขุด</td>';
+        tbody.appendChild(tr);
+      } else {
+        leaders.forEach((row) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td class="rank">#' + row.rank + '</td>' +
+            '<td>' + row.miner_id + '</td>' +
+            '<td class="muted">' + cutWallet(row.wallet_address) + '</td>' +
+            '<td>' + Number(row.total_reward || 0).toFixed(6) + '</td>' +
+            '<td style="color:var(--green)">+' + Number(row.today_reward || 0).toFixed(6) + '</td>' +
+            '<td>' + Number(row.avg_hashrate || 0).toFixed(1) + ' MH/s</td>' +
+            '<td>' + Number(row.ticks || 0) + '</td>' +
+            '<td class="muted">' + fmtDate(row.last_mined_at) + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      byId('kMiners').textContent = Number(net.miners_online || 0).toLocaleString();
+      byId('kRewards').textContent = Number(net.rewards_24h || 0).toFixed(4);
+      byId('kHash').textContent = Number(net.avg_recent_hashrate || 0).toFixed(1) + ' MH/s';
+      byId('kFee').textContent = Number(net.pool_fee_percent || 0).toFixed(1) + '%';
+      byId('onlinePill').textContent = 'Online: ' + Number(net.miners_online || 0);
+      byId('statusText').textContent = 'Updated: ' + new Date().toLocaleTimeString('th-TH');
+    } catch (err) {
+      byId('statusText').textContent = 'โหลดไม่สำเร็จ: ' + err.message;
+    }
+  }
+
+  function startAutoRefresh(){
+    if(timer){ clearInterval(timer); }
+    const sec = Math.max(3, Number(byId('refreshSec').value || 10));
+    timer = setInterval(refreshBoard, sec * 1000);
+  }
+
+  byId('refreshBtn').addEventListener('click', refreshBoard);
+  byId('refreshSec').addEventListener('change', startAutoRefresh);
+
+  byId('apiBase').value = defaultApiBase();
+  localStorage.setItem(API_KEY, byId('apiBase').value.trim());
+  byId('apiBase').addEventListener('change', () => {
+    localStorage.setItem(API_KEY, byId('apiBase').value.trim());
+  });
+
+  refreshBoard();
+  startAutoRefresh();
+</script>
+</body>
+</html>

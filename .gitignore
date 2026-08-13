@@ -1,0 +1,20 @@
+# Runtime data and secrets
+.env
+obz_miner.db
+obz_miner.db-*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local provider metadata
+.netlify/
+
+# Local logs
+*.log
+
+# Token project dependencies and build output
+token/node_modules/
+token/artifacts/
+token/cache/
+token/typechain-types/

@@ -1,0 +1,23 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking attacks
+    X-Frame-Options = "DENY"
+    # Block MIME-type sniffing
+    X-Content-Type-Options = "nosniff"
+    # Enable XSS filter in browsers
+    X-XSS-Protection = "1; mode=block"
+    # Strict referrer policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Permissions policy - restrict dangerous APIs
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(self)"
+    # Content Security Policy - prevent XSS & injection
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https: http://127.0.0.1:* http://localhost:*; frame-ancestors 'none';"
+    # HTTP Strict Transport Security (HTTPS only)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200
+  conditions = {Role = ["admin"]}

@@ -1,0 +1,1679 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OBZ Exchange · Trade Crypto</title>
+  <style>
+    :root {
+      --bg: #030b1a;
+      --bg2: #06122a;
+      --panel: rgba(6,14,32,0.94);
+      --line: rgba(103,232,249,0.14);
+      --text: #f8fafc;
+      --muted: #8baac4;
+      --cyan: #67e8f9;
+      --green: #34d399;
+      --purple: #a855f7;
+      --red: #f87171;
+      --orange: #fb923c;
+      --glow: rgba(103,232,249,0.28);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(3,11,26,0.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-brand {
+      font-size: 1.5rem; font-weight: 900; letter-spacing: 0.05em;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; transition: color 0.18s; }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-outline {
+      padding: 8px 18px; border: 1px solid var(--line); border-radius: 8px;
+      background: transparent; color: var(--text); font-weight: 700; cursor: pointer;
+      transition: border-color 0.18s, background 0.18s; font-size: 14px;
+    }
+    .btn-outline:hover { border-color: var(--cyan); background: rgba(103,232,249,0.08); }
+    .btn-primary {
+      padding: 8px 18px; border: 0; border-radius: 8px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      color: #fff; font-weight: 700; cursor: pointer; font-size: 14px;
+      box-shadow: 0 0 20px rgba(103,232,249,0.2);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 24px rgba(103,232,249,0.32); }
+    .lang-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px; border-radius: 10px;
+      border: 1px solid rgba(103,232,249,0.18);
+      background: rgba(255,255,255,0.04);
+    }
+    .lang-chip {
+      padding: 6px 10px; border-radius: 8px;
+      border: 1px solid transparent; background: transparent;
+      color: var(--muted); font-size: 12px; font-weight: 800; cursor: pointer;
+      transition: 0.18s;
+    }
+    .lang-chip.active {
+      color: var(--cyan);
+      border-color: rgba(103,232,249,0.24);
+      background: rgba(103,232,249,0.12);
+    }
+
+    /* ── TICKER BAR ── */
+    .ticker-bar {
+      position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+      background: rgba(6,14,32,0.96);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 0;
+      overflow: hidden;
+    }
+    .ticker-inner {
+      display: flex; gap: 32px;
+      white-space: nowrap;
+      animation: tickerScroll 28s linear infinite;
+    }
+    .ticker-item { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 600; }
+    .ticker-item .sym { color: var(--text); }
+    .ticker-item .prc { color: var(--cyan); }
+    .ticker-item .chg.up { color: var(--green); }
+    .ticker-item .chg.dn { color: var(--red); }
+    @keyframes tickerScroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      padding: 160px 40px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(103,232,249,0.18) 0%, transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(168,85,247,0.18) 0%, transparent 38%),
+        radial-gradient(circle at 50% 100%, rgba(251,146,60,0.1) 0%, transparent 35%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 999px;
+      background: rgba(103,232,249,0.1);
+      border: 1px solid rgba(103,232,249,0.28);
+      color: var(--cyan); font-size: 13px; font-weight: 700;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      max-width: 760px;
+      margin-bottom: 20px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.1rem; color: var(--muted); max-width: 540px;
+      line-height: 1.65; margin-bottom: 36px;
+    }
+    .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 60px; }
+    .hero-cta .btn-primary { padding: 14px 32px; font-size: 16px; border-radius: 12px; }
+    .hero-cta .btn-outline { padding: 14px 32px; font-size: 16px; border-radius: 12px; }
+
+    /* ── LIVE PRICE STRIP ── */
+    .price-strip {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .price-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 22px;
+      min-width: 160px;
+      text-align: left;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .price-card:hover { transform: translateY(-3px); border-color: rgba(103,232,249,0.36); }
+    .price-card .pc-sym { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .price-card .pc-val { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+    .price-card .pc-chg { font-size: 12px; font-weight: 700; margin-top: 4px; }
+    .price-card .pc-chg.up { color: var(--green); }
+    .price-card .pc-chg.dn { color: var(--red); }
+
+    /* ── STATS BAND ── */
+    .stats-band {
+      display: flex; justify-content: center; gap: 0;
+      background: rgba(6,14,32,0.8);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .stat-item {
+      flex: 1; max-width: 220px;
+      padding: 28px 24px;
+      text-align: center;
+      border-right: 1px solid var(--line);
+    }
+    .stat-item:last-child { border-right: 0; }
+    .stat-item .s-val {
+      font-size: 2rem; font-weight: 900;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-item .s-lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 100px 40px; max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      display: inline-block; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--cyan); margin-bottom: 12px;
+    }
+    .section-title { font-size: clamp(1.6rem, 3.5vw, 2.6rem); font-weight: 900; line-height: 1.2; margin-bottom: 14px; }
+    .section-sub { font-size: 1rem; color: var(--muted); max-width: 500px; line-height: 1.6; margin-bottom: 48px; }
+
+    /* ── MARKETS TABLE ── */
+    .markets-section { padding: 80px 40px; max-width: 1200px; margin: 0 auto; }
+    .market-table-wrap {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+    }
+    .market-table-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .market-tabs { display: flex; gap: 8px; }
+    .market-tab {
+      padding: 6px 14px; border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent; color: var(--muted);
+      font-weight: 700; cursor: pointer; font-size: 13px;
+      transition: 0.18s;
+    }
+    .market-tab.active {
+      background: rgba(103,232,249,0.12);
+      border-color: rgba(103,232,249,0.28);
+      color: var(--cyan);
+    }
+    .market-search {
+      padding: 8px 14px; border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text); outline: none; font-size: 13px;
+    }
+    .market-search:focus { border-color: rgba(103,232,249,0.4); }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left; padding: 12px 24px;
+      font-size: 12px; color: var(--muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--line);
+    }
+    tbody tr { transition: background 0.18s; cursor: pointer; }
+    tbody tr:hover { background: rgba(103,232,249,0.04); }
+    tbody td { padding: 14px 24px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .pair-cell { display: flex; align-items: center; gap: 10px; }
+    .pair-icon {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      background: rgba(103,232,249,0.1);
+      border: 1px solid rgba(103,232,249,0.16);
+    }
+    .pair-name { font-weight: 700; }
+    .pair-base { font-size: 12px; color: var(--muted); }
+    .price-val { font-weight: 700; }
+    .chg-cell { font-weight: 700; }
+    .chg-cell.up { color: var(--green); }
+    .chg-cell.dn { color: var(--red); }
+    .vol-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .vol-bar { height: 4px; border-radius: 2px; background: rgba(103,232,249,0.2); min-width: 40px; overflow: hidden; }
+    .vol-bar-fill { height: 100%; background: linear-gradient(90deg,var(--cyan),var(--purple)); border-radius: 2px; }
+    .trade-link {
+      padding: 6px 14px; border-radius: 8px;
+      background: rgba(103,232,249,0.12);
+      border: 1px solid rgba(103,232,249,0.22);
+      color: var(--cyan); font-weight: 700; font-size: 12px;
+      text-decoration: none; transition: 0.18s;
+    }
+    .trade-link:hover { background: rgba(103,232,249,0.22); }
+
+    /* ── FEATURES GRID ── */
+    .features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .feature-card {
+      padding: 28px 24px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      backdrop-filter: blur(12px);
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(103,232,249,0.1), transparent 70%);
+    }
+    .feature-card:hover { transform: translateY(-4px); border-color: rgba(103,232,249,0.3); box-shadow: 0 16px 40px rgba(0,0,0,0.3); }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin-bottom: 16px;
+      background: rgba(103,232,249,0.08);
+      border: 1px solid rgba(103,232,249,0.16);
+    }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* ── TRADING PREVIEW ── */
+    .trade-preview {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    }
+    .trade-preview-img {
+      border-radius: 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 20px;
+      overflow: hidden;
+    }
+    .mini-chart { width: 100%; height: 200px; position: relative; }
+    .mini-chart svg { width: 100%; height: 100%; }
+    .preview-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    .pstat {
+      padding: 12px 14px; border-radius: 12px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    }
+    .pstat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+    .pstat .val { font-size: 1rem; font-weight: 800; margin-top: 4px; color: var(--cyan); }
+    .trade-preview-text .section-sub { margin-bottom: 28px; }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .feature-list li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+    .feature-list li::before { content: '✓'; color: var(--green); font-weight: 900; font-size: 16px; }
+
+    /* ── FEES TABLE ── */
+    .fees-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .fee-card {
+      padding: 28px 24px;
+      border-radius: 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+    .fee-card.featured {
+      border-color: rgba(103,232,249,0.36);
+      background: linear-gradient(135deg, rgba(103,232,249,0.08), rgba(168,85,247,0.08));
+    }
+    .fee-card.featured::before {
+      content: 'POPULAR';
+      position: absolute; top: 16px; right: 16px;
+      padding: 3px 10px; border-radius: 999px;
+      background: rgba(103,232,249,0.18);
+      border: 1px solid rgba(103,232,249,0.28);
+      color: var(--cyan); font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+    }
+    .fee-card .tier { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+    .fee-card .fee-val {
+      font-size: 2.4rem; font-weight: 900;
+      background: linear-gradient(90deg,var(--cyan),var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    .fee-card .fee-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .fee-perks { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .fee-perks li { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .fee-perks li::before { content: '●'; color: var(--green); font-size: 8px; }
+    .fee-card .btn-primary { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; }
+    .fee-card .btn-outline { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; }
+
+    /* ── CTA BAND ── */
+    .cta-band {
+      padding: 100px 40px;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(103,232,249,0.06), rgba(168,85,247,0.06));
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .cta-band h2 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900; margin-bottom: 14px; }
+    .cta-band p { font-size: 1rem; color: var(--muted); margin-bottom: 36px; }
+    .cta-band .btn-primary { padding: 16px 48px; font-size: 17px; border-radius: 14px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: rgba(3,11,26,0.98);
+      border-top: 1px solid var(--line);
+      padding: 60px 40px 32px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+    .footer-brand { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.05em;
+      background: linear-gradient(90deg,var(--cyan),var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 12px; }
+    .footer-desc { font-size: 14px; color: var(--muted); line-height: 1.65; max-width: 280px; }
+    .footer-col h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .footer-col a { display: block; font-size: 14px; color: var(--muted); text-decoration: none; margin-bottom: 10px; transition: color 0.18s; }
+    .footer-col a:hover { color: var(--cyan); }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+    .social-links { display: flex; gap: 14px; }
+    .social-links a { color: var(--muted); text-decoration: none; font-size: 18px; transition: color 0.18s; }
+    .social-links a:hover { color: var(--cyan); }
+
+    /* ── WALLET MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(3,11,26,0.85); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: linear-gradient(135deg, rgba(6,14,32,0.98), rgba(14,28,60,0.98));
+      border: 1px solid rgba(103,232,249,0.26);
+      border-radius: 24px;
+      padding: 30px 28px;
+      width: 420px; max-width: 96vw;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+      animation: mUp 0.22s ease;
+    }
+    @keyframes mUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .modal-head h3 { font-size: 1.1rem; color: var(--cyan); }
+    .mclose { background: rgba(255,255,255,0.07); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+    .wallet-list { display: flex; flex-direction: column; gap: 10px; }
+    .wallet-row {
+      display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+      border-radius: 14px; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer; transition: border-color 0.18s, background 0.18s, transform 0.18s;
+    }
+    .wallet-row:hover { border-color: rgba(103,232,249,0.38); background: rgba(103,232,249,0.07); transform: translateX(3px); }
+    .wallet-row .wico { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .wallet-row .wname { font-weight: 700; font-size: 15px; }
+    .wallet-row .wsub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .wallet-row .warr { margin-left: auto; color: var(--muted); font-size: 20px; }
+    .wallet-divider { text-align: center; color: var(--muted); font-size: 12px; margin: 14px 0; position: relative; }
+    .wallet-divider::before,.wallet-divider::after { content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--line); }
+    .wallet-divider::before { left:0; }
+    .wallet-divider::after { right:0; }
+    .w-spinner { width: 48px; height: 48px; border: 3px solid rgba(103,232,249,0.18); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 24px auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .w-status { display: none; text-align: center; padding: 10px 0; }
+    .w-status.show { display: block; }
+    .connected-pill {
+      display: none; align-items: center; gap: 8px;
+      padding: 7px 14px; border-radius: 999px;
+      background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3);
+      color: var(--green); font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .connected-pill.show { display: flex; }
+
+    /* ── SIGN IN MODAL ── */
+    .auth-modal {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(3,11,26,0.85); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center;
+    }
+    .auth-modal.open { display: flex; }
+    .auth-box {
+      background: linear-gradient(135deg, rgba(6,14,32,0.98), rgba(14,28,60,0.98));
+      border: 1px solid rgba(103,232,249,0.26);
+      border-radius: 24px; padding: 36px 32px;
+      width: 400px; max-width: 96vw;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+      animation: mUp 0.22s ease;
+    }
+    .auth-box h2 { font-size: 1.4rem; font-weight: 800; color: var(--cyan); margin-bottom: 6px; }
+    .auth-box p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+    .auth-field { margin-bottom: 14px; }
+    .auth-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .auth-field input {
+      width: 100%; padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+      background: rgba(255,255,255,0.04); color: var(--text);
+      outline: none; font-size: 14px;
+    }
+    .auth-field input:focus { border-color: rgba(103,232,249,0.4); box-shadow: 0 0 0 3px rgba(103,232,249,0.1); }
+    .auth-submit {
+      width: 100%; padding: 13px; border: 0; border-radius: 12px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      color: #fff; font-weight: 700; font-size: 15px; cursor: pointer;
+      box-shadow: 0 0 24px rgba(103,232,249,0.2); margin-top: 4px;
+    }
+    .auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--muted); }
+    .auth-switch a { color: var(--cyan); font-weight: 700; cursor: pointer; text-decoration: none; }
+
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 120px 20px 60px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .trade-preview { grid-template-columns: 1fr; }
+      .fees-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .stats-band { flex-wrap: wrap; }
+      .stat-item { flex: 50%; border-right: 0; border-bottom: 1px solid var(--line); }
+      section { padding: 60px 20px; }
+      .markets-section { padding: 40px 20px; }
+    }
+      /* ─── MOBILE RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-actions { gap: 6px; }
+      .nav-actions .btn { padding: 6px 10px; font-size: 12px; }
+      .hero { padding: 110px 16px 48px; }
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 0.95rem; }
+      .hero-cta { flex-direction: column; align-items: stretch; gap: 10px; }
+      .hero-cta .btn-primary, .hero-cta .btn-outline { padding: 13px 20px; font-size: 15px; }
+      .price-strip { gap: 10px; }
+      .price-card { min-width: 140px; padding: 12px 16px; }
+      .stats-band { flex-direction: column; }
+      .stat-item { max-width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
+      .markets-section { padding: 24px 14px; }
+      .market-table-head { flex-direction: column; gap: 10px; align-items: flex-start; }
+      .market-tabs { flex-wrap: wrap; }
+      table { font-size: 12px; }
+      th, td { padding: 8px 8px; }
+      .features-grid { grid-template-columns: 1fr; gap: 14px; }
+      .trade-preview { grid-template-columns: 1fr; gap: 24px; }
+      .fees-grid { grid-template-columns: 1fr; gap: 14px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      section { padding: 48px 16px; }
+      .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .kpi .val { font-size: 1.2rem; }
+      .grid-2, .grid-3, .grid-2b, .two-col, .three-col { grid-template-columns: 1fr !important; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .miner-item { flex-wrap: wrap; }
+      .wc-row { flex-direction: column; }
+      .wc-actions { flex-wrap: wrap; }
+      .wbtn { flex: 1; min-width: 100px; }
+      .withdraw-card { padding: 16px; }
+      .page { padding: 20px 14px 60px; }
+      .page-hero { padding: 40px 16px 32px; }
+      .shield-icon { font-size: 56px; }
+      .overall-bar { gap: 12px; }
+      .score-ring { width: 100px; height: 100px; }
+      .score-ring svg { width: 100px; height: 100px; }
+      .score-val { font-size: 1.2rem; }
+      .protect-card { padding: 16px; }
+      .topbar { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 52px; gap: 6px; padding-top: 6px; padding-bottom: 6px; }
+      .pair-meta { display: none; }
+      .tb-title { font-size: 0.9rem; }
+      .trade-layout { grid-template-columns: 1fr !important; grid-template-rows: auto !important; height: auto; overflow: visible; }
+      .book-pane { display: none; }
+      .form-pane { grid-column: 1; grid-row: auto; height: auto; }
+      .bottom-pane { grid-column: 1; grid-row: auto; height: 200px; }
+      .chart-pane { grid-column: 1; grid-row: auto; height: 280px; }
+      .pane { display: none; }
+      .chart-area { height: 220px; }
+      .sidebar { width: 100%; min-height: auto; position: relative; height: auto; }
+      .main { width: 100%; }
+      .app { flex-direction: column; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ai-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
+      .ai-fab { bottom: 16px; right: 16px; width: 50px; height: 50px; font-size: 22px; }
+    }
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.7rem; }
+      .nav-brand { font-size: 1.1rem; }
+      .overall-bar { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">OBZ X</div>
+  <div class="nav-links">
+    <a href="#" id="navMarkets">Markets</a>
+    <a href="#" id="navTrade">Trade</a>
+    <a href="#" id="navEarn">Earn</a>
+    <a href="#" id="navMining">Mining</a>
+    <a href="#" id="navLearn">Learn</a>
+  </div>
+  <div class="nav-actions">
+    <div style="padding:6px 10px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.28);color:var(--green);font-size:11px;font-weight:800;letter-spacing:0.05em;">BSC TESTNET</div>
+    <div class="lang-toggle" role="group" aria-label="Language settings">
+      <button class="lang-chip active" type="button" id="langTh">ภาษาไทย</button>
+      <button class="lang-chip" type="button" id="langEn">English</button>
+    </div>
+    <button class="btn-outline" id="openLogin">Log In</button>
+    <button class="btn-primary" id="openRegister">Get Started</button>
+    <button class="btn-outline" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy Contract</button>
+    <button class="btn-outline" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
+    <button class="btn-outline" id="openWalletBtn" style="padding:7px 14px;font-size:13px;">🔗 Wallet</button>
+    <div class="connected-pill" id="connectedPill"><span>●</span><span id="connAddr">Not connected</span><span id="connObz" style="opacity:0.9;">OBZ: --</span></div>
+  </div>
+</nav>
+
+<!-- TICKER BAR -->
+<div class="ticker-bar">
+  <div class="ticker-inner" id="tickerInner">
+    <!-- doubled for seamless loop -->
+    <div class="ticker-item"><span class="sym">BTC/USDT</span><span class="prc" id="t-btc">$61,420</span><span class="chg up" id="tc-btc">+2.41%</span></div>
+    <div class="ticker-item"><span class="sym">ETH/USDT</span><span class="prc" id="t-eth">$3,214</span><span class="chg dn">-0.52%</span></div>
+    <div class="ticker-item"><span class="sym">SOL/USDT</span><span class="prc">$142.80</span><span class="chg up">+3.14%</span></div>
+    <div class="ticker-item"><span class="sym">XRP/USDT</span><span class="prc">$0.5822</span><span class="chg up">+0.88%</span></div>
+    <div class="ticker-item"><span class="sym">BNB/USDT</span><span class="prc">$408.20</span><span class="chg dn">-1.02%</span></div>
+    <div class="ticker-item"><span class="sym">DOGE/USDT</span><span class="prc">$0.1248</span><span class="chg up">+5.30%</span></div>
+    <div class="ticker-item"><span class="sym">OBZ/USDT</span><span class="prc">$4.218</span><span class="chg up">+12.40%</span></div>
+    <div class="ticker-item"><span class="sym">AVAX/USDT</span><span class="prc">$36.44</span><span class="chg dn">-0.78%</span></div>
+    <!-- duplicate for seamless -->
+    <div class="ticker-item"><span class="sym">BTC/USDT</span><span class="prc">$61,420</span><span class="chg up">+2.41%</span></div>
+    <div class="ticker-item"><span class="sym">ETH/USDT</span><span class="prc">$3,214</span><span class="chg dn">-0.52%</span></div>
+    <div class="ticker-item"><span class="sym">SOL/USDT</span><span class="prc">$142.80</span><span class="chg up">+3.14%</span></div>
+    <div class="ticker-item"><span class="sym">XRP/USDT</span><span class="prc">$0.5822</span><span class="chg up">+0.88%</span></div>
+    <div class="ticker-item"><span class="sym">BNB/USDT</span><span class="prc">$408.20</span><span class="chg dn">-1.02%</span></div>
+    <div class="ticker-item"><span class="sym">DOGE/USDT</span><span class="prc">$0.1248</span><span class="chg up">+5.30%</span></div>
+    <div class="ticker-item"><span class="sym">OBZ/USDT</span><span class="prc">$4.218</span><span class="chg up">+12.40%</span></div>
+    <div class="ticker-item"><span class="sym">AVAX/USDT</span><span class="prc">$36.44</span><span class="chg dn">-0.78%</span></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge" id="heroBadge">● Live · 150+ Spot &amp; 80+ Futures Pairs</div>
+  <h1 id="heroTitle">Trade Crypto<br/><span>Like a Pro</span></h1>
+  <p id="heroDesc">OBZ Exchange delivers ultra-low fees, deep liquidity, and a real-time terminal built for serious traders.</p>
+  <div class="hero-cta">
+    <button class="btn-primary" id="heroRegister">Start Trading Free</button>
+    <button class="btn-outline" id="heroExplore">Explore Markets →</button>
+  </div>
+  <div class="price-strip" id="priceStrip">
+    <div class="price-card">
+      <div class="pc-sym">BTC / USDT</div>
+      <div class="pc-val" id="hp-btc">$61,420.18</div>
+      <div class="pc-chg up" id="hc-btc">▲ +2.41%</div>
+    </div>
+    <div class="price-card">
+      <div class="pc-sym">ETH / USDT</div>
+      <div class="pc-val" id="hp-eth">$3,214.72</div>
+      <div class="pc-chg dn">▼ -0.52%</div>
+    </div>
+    <div class="price-card">
+      <div class='pc-sym'>OBZ / USDT</div><div style='font-size:10px;color:var(--green);font-family:monospace;'>BSC Testnet ✓</div>
+      <div class="pc-val" id="hp-obz">$4.218</div>
+      <div class="pc-chg up">▲ +12.40%</div>
+    </div>
+    <div class="price-card">
+      <div class="pc-sym">SOL / USDT</div>
+      <div class="pc-val">$142.80</div>
+      <div class="pc-chg up">▲ +3.14%</div>
+    </div>
+    <div class="price-card">
+      <div class="pc-sym">BNB / USDT</div>
+      <div class="pc-val">$408.20</div>
+      <div class="pc-chg dn">▼ -1.02%</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAND -->
+<div class="stats-band">
+  <div class="stat-item"><div class="s-val">$4.8B+</div><div class="s-lbl">24h Trading Volume</div></div>
+  <div class="stat-item"><div class="s-val">2.4M+</div><div class="s-lbl">Registered Users</div></div>
+  <div class="stat-item"><div class="s-val">150+</div><div class="s-lbl">Spot Trading Pairs</div></div>
+  <div class="stat-item"><div class="s-val">0.02%</div><div class="s-lbl">Maker Fee</div></div>
+  <div class="stat-item"><div class="s-val">99.99%</div><div class="s-lbl">Platform Uptime</div></div>
+</div>
+
+<!-- MARKETS TABLE -->
+<div class="markets-section">
+  <div class="market-table-wrap">
+    <div class="market-table-head">
+      <div>
+        <div class="section-label">Markets</div>
+        <div style="font-size:1.3rem;font-weight:800;">Top Movers</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="market-tabs">
+          <button class="market-tab active">All</button>
+          <button class="market-tab">Spot</button>
+          <button class="market-tab">Futures</button>
+          <button class="market-tab">DeFi</button>
+        </div>
+        <input class="market-search" placeholder="Search coin…" />
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Pair</th><th>Price</th><th>24h Change</th><th>24h Volume</th><th>Market Cap</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="marketTbody">
+        <tr>
+          <td style="color:var(--muted)">1</td>
+          <td><div class="pair-cell"><div class="pair-icon">₿</div><div><div class="pair-name">BTC</div><div class="pair-base">Bitcoin</div></div></div></td>
+          <td class="price-val" id="row-btc">$61,420.18</td>
+          <td class="chg-cell up">+2.41%</td>
+          <td><div class="vol-bar-wrap">$2.44B<div class="vol-bar"><div class="vol-bar-fill" style="width:100%"></div></div></div></td>
+          <td>$1.21T</td>
+          <td><a class="trade-link" href="trade.html">Trade</a></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">2</td>
+          <td><div class="pair-cell"><div class="pair-icon">Ξ</div><div><div class="pair-name">ETH</div><div class="pair-base">Ethereum</div></div></div></td>
+          <td class="price-val">$3,214.72</td>
+          <td class="chg-cell dn">-0.52%</td>
+          <td><div class="vol-bar-wrap">$880M<div class="vol-bar"><div class="vol-bar-fill" style="width:36%;background:linear-gradient(90deg,var(--purple),var(--red))"></div></div></div></td>
+          <td>$385B</td>
+          <td><a class="trade-link" href="trade.html">Trade</a></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">3</td>
+          <td><div class="pair-cell"><div class="pair-icon" style="background:rgba(168,85,247,0.12)">◎</div><div><div class="pair-name">SOL</div><div class="pair-base">Solana</div></div></div></td>
+          <td class="price-val">$142.80</td>
+          <td class="chg-cell up">+3.14%</td>
+          <td><div class="vol-bar-wrap">$420M<div class="vol-bar"><div class="vol-bar-fill" style="width:17%;"></div></div></div></td>
+          <td>$63B</td>
+          <td><a class="trade-link" href="trade.html">Trade</a></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">4</td>
+          <td><div class="pair-cell"><div class="pair-icon" style="font-size:14px;background:rgba(52,211,153,0.12)">OBZ</div><div><div class="pair-name">OBZ</div><div class="pair-base">OBZ Token</div></div></div></td>
+          <td class="price-val" id="row-obz">$4.218</td>
+          <td class="chg-cell up">+12.40%</td>
+          <td><div class="vol-bar-wrap">$112M<div class="vol-bar"><div class="vol-bar-fill" style="width:5%;"></div></div></div></td>
+          <td>$4.2B</td>
+          <td><a class="trade-link" href="trade.html">Trade</a></td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted)">5</td>
+          <td><div class="pair-cell"><div class="pair-icon" style="background:rgba(251,146,60,0.12)">◈</div><div><div class="pair-name">BNB</div><div class="pair-base">BNB Chain</div></div></div></td>
+          <td class="price-val">$408.20</td>
+          <td class="chg-cell dn">-1.02%</td>
+          <td><div class="vol-bar-wrap">$310M<div class="vol-bar"><div class="vol-bar-fill" style="width:13%;background:linear-gradient(90deg,var(--orange),var(--red))"></div></div></div></td>
+          <td>$61B</td>
+          <td><a class="trade-link" href="trade.html">Trade</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section>
+  <div style="text-align:center;margin-bottom:48px;">
+    <div class="section-label">Why OBZ Exchange</div>
+    <div class="section-title">Everything You Need to Trade</div>
+    <div class="section-sub" style="margin:0 auto;">Professional tools, enterprise security, and lightning-fast execution — all in one platform.</div>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Ultra-Low Latency</h3>
+      <p>Sub-millisecond order execution engine handles 1M+ orders/sec with no slippage on major pairs.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>Bank-Grade Security</h3>
+      <p>Cold storage, 2FA, anti-phishing, and real-time threat monitoring protect your assets 24/7.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Pro Trading Terminal</h3>
+      <p>Advanced charting with 100+ indicators, depth book, heatmaps, and live order-flow analytics.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💎</div>
+      <h3>Deep Liquidity</h3>
+      <p>Aggregated order books across global market makers ensure tight spreads and massive depth.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Multi-Chain DeFi</h3>
+      <p>Connect MetaMask, Phantom, or any WalletConnect wallet to access on-chain assets instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⛏️</div>
+      <h3>OBZ Mining</h3>
+      <p>Earn OBZ token rewards by trading, staking, and providing liquidity on the OBZ network.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TRADING PREVIEW -->
+<section>
+  <div class="trade-preview">
+    <div class="trade-preview-img">
+      <div class="mini-chart">
+        <svg viewBox="0 0 500 200" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(103,232,249,0.3)"/>
+              <stop offset="100%" stop-color="rgba(103,232,249,0)"/>
+            </linearGradient>
+          </defs>
+          <g stroke="rgba(255,255,255,0.06)" stroke-width="1">
+            <line x1="0" y1="40" x2="500" y2="40"/>
+            <line x1="0" y1="80" x2="500" y2="80"/>
+            <line x1="0" y1="120" x2="500" y2="120"/>
+            <line x1="0" y1="160" x2="500" y2="160"/>
+          </g>
+          <path id="mpFill" d="" fill="url(#cg)"/>
+          <path id="mpLine" d="" fill="none" stroke="#67e8f9" stroke-width="2.5"/>
+          <g id="mpCandles"></g>
+        </svg>
+      </div>
+      <div class="preview-stats">
+        <div class="pstat"><div class="lbl">24h High</div><div class="val">$62,100</div></div>
+        <div class="pstat"><div class="lbl">24h Low</div><div class="val" style="color:var(--red)">$60,780</div></div>
+        <div class="pstat"><div class="lbl">Volume</div><div class="val">$2.44B</div></div>
+        <div class="pstat"><div class="lbl">OI</div><div class="val" style="color:var(--purple)">$1.08B</div></div>
+      </div>
+    </div>
+    <div class="trade-preview-text">
+      <div class="section-label">Trading Terminal</div>
+      <div class="section-title">Real-Time Charts &amp;<br/>Order Flow</div>
+      <div class="section-sub">See the market as it moves with live candlesticks, VWAP overlay, volume profile, and depth heatmap.</div>
+      <ul class="feature-list">
+        <li>100+ technical indicators &amp; overlays</li>
+        <li>Full-depth order book with heatmap</li>
+        <li>VWAP, Bollinger Bands, RSI, MACD</li>
+        <li>1-click margin &amp; cross-leverage trading</li>
+        <li>Trailing stop-loss &amp; TP automation</li>
+      </ul>
+      <a href="trade.html" class="btn-primary" style="display:inline-block;padding:13px 28px;text-decoration:none;border-radius:12px;font-size:15px;">Open Terminal →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FEES -->
+<section>
+  <div style="text-align:center;margin-bottom:48px;">
+    <div class="section-label">Pricing</div>
+    <div class="section-title">Simple, Low Fees</div>
+    <div class="section-sub" style="margin:0 auto;">Start for free. Unlock lower fees as you trade more or hold OBZ token.</div>
+  </div>
+  <div class="fees-grid">
+    <div class="fee-card">
+      <div class="tier">Starter</div>
+      <div class="fee-val">0.10%</div>
+      <div class="fee-sub">Taker / 0.08% Maker</div>
+      <ul class="fee-perks">
+        <li>Spot &amp; Futures trading</li>
+        <li>Basic charting tools</li>
+        <li>Up to $50K monthly volume</li>
+        <li>Standard API access</li>
+      </ul>
+      <button class="btn-outline" id="freeRegister">Create Free Account</button>
+    </div>
+    <div class="fee-card featured">
+      <div class="tier">Pro (Hold 500 OBZ)</div>
+      <div class="fee-val">0.04%</div>
+      <div class="fee-sub">Taker / 0.02% Maker</div>
+      <ul class="fee-perks">
+        <li>60% fee discount</li>
+        <li>Full terminal &amp; API access</li>
+        <li>OBZ mining rewards active</li>
+        <li>Priority support</li>
+      </ul>
+      <button class="btn-primary" id="proRegister">Get Pro Access</button>
+    </div>
+    <div class="fee-card">
+      <div class="tier">Institutional</div>
+      <div class="fee-val">0.01%</div>
+      <div class="fee-sub">Taker / 0.00% Maker</div>
+      <ul class="fee-perks">
+        <li>Custom fee negotiation</li>
+        <li>Dedicated liquidity desk</li>
+        <li>Co-location options</li>
+        <li>24/7 account manager</li>
+      </ul>
+      <button class="btn-outline">Contact Sales</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <h2>Start Trading on OBZ Exchange</h2>
+  <p>Join 2.4 million traders who trust OBZ for professional-grade crypto trading.</p>
+  <button class="btn-primary" id="ctaRegister">Create Free Account</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">OBZ X</div>
+      <div class="footer-desc">The professional crypto exchange for serious traders. Low fees, deep liquidity, and real-time analytics.</div>
+    </div>
+    <div class="footer-col">
+      <h4>Exchange</h4>
+      <a href="trade.html">Spot Trading</a>
+      <a href="trade.html">Futures</a>
+      <a href="#">Earn / Staking</a>
+      <a href="#">OBZ Mining</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="#">About</a>
+      <a href="#">Careers</a>
+      <a href="#">Blog</a>
+      <a href="#">Press</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="#">Help Center</a>
+      <a href="#">API Docs</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 OBZ Exchange. All rights reserved. · <a href='https://testnet.bscscan.com/token/0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7' target='_blank' style='color:var(--cyan);'>OBZ Contract ✓</a></div>
+    <div class="social-links">
+      <a href="#" title="Twitter">𝕏</a>
+      <a href="#" title="Telegram">✈</a>
+      <a href="#" title="Discord">⚙</a>
+      <a href="#" title="GitHub">⬡</a>
+    </div>
+  </div>
+</footer>
+
+<!-- WALLET MODAL -->
+<div class="modal-overlay" id="walletModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Connect Wallet</h3>
+      <button class="mclose" id="wClose">✕</button>
+    </div>
+    <div id="wOptions">
+      <div class="wallet-list">
+        <div class="wallet-row" data-w="MetaMask"><div class="wico" style="background:rgba(245,130,32,0.14);">🦊</div><div><div class="wname">MetaMask</div><div class="wsub">Browser extension</div></div><div class="warr">›</div></div>
+        <div class="wallet-row" data-w="WalletConnect"><div class="wico" style="background:rgba(59,153,252,0.14);">🔵</div><div><div class="wname">WalletConnect</div><div class="wsub">Scan with mobile wallet</div></div><div class="warr">›</div></div>
+        <div class="wallet-row" data-w="Coinbase"><div class="wico" style="background:rgba(22,82,240,0.14);">🟦</div><div><div class="wname">Coinbase Wallet</div><div class="wsub">Mobile &amp; extension</div></div><div class="warr">›</div></div>
+      </div>
+      <div class="wallet-divider">or</div>
+      <div class="wallet-list">
+        <div class="wallet-row" data-w="Trust"><div class="wico" style="background:rgba(51,117,187,0.14);">🛡️</div><div><div class="wname">Trust Wallet</div><div class="wsub">Mobile wallet</div></div><div class="warr">›</div></div>
+        <div class="wallet-row" data-w="Phantom"><div class="wico" style="background:rgba(171,116,255,0.14);">👻</div><div><div class="wname">Phantom</div><div class="wsub">Solana &amp; multi-chain</div></div><div class="warr">›</div></div>
+      </div>
+    </div>
+    <div class="w-status" id="wStatus">
+      <div class="w-spinner"></div>
+      <div style="color:var(--cyan);font-weight:700;" id="wStatusTxt">Connecting…</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px;">Approve in your wallet</div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL (Login / Register) -->
+<div class="auth-modal" id="authModal">
+  <div class="auth-box">
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:24px;">
+      <div>
+        <h2 id="authTitle">Welcome Back</h2>
+        <p id="authSub">Sign in to your OBZ account</p>
+      </div>
+      <button class="mclose" id="authClose">✕</button>
+    </div>
+    <div id="authRegExtra" style="display:none;">
+      <div class="auth-field">
+        <label>Full Name</label>
+        <input type="text" placeholder="Your name" />
+      </div>
+    </div>
+    <div class="auth-field">
+      <label>Email Address</label>
+      <input type="email" placeholder="you@example.com" />
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" placeholder="••••••••" />
+    </div>
+    <button class="auth-submit" id="authSubmit">Sign In</button>
+    <div class="auth-switch" id="authSwitch">
+      Don't have an account? <a id="authToggle">Create one →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── live prices ── */
+  let btcPrice = 61420.18, obzPrice = 4.218;
+  function tick() {
+    btcPrice += (Math.random() - 0.495) * 40;
+    obzPrice += (Math.random() - 0.49) * 0.04;
+    const fmt = (v, d=2) => '$' + v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+    document.getElementById('t-btc').textContent = fmt(btcPrice);
+    document.getElementById('hp-btc').textContent = fmt(btcPrice);
+    document.getElementById('row-btc').textContent = fmt(btcPrice);
+    document.getElementById('hp-obz').textContent = fmt(obzPrice,3);
+    document.getElementById('row-obz').textContent = fmt(obzPrice,3);
+  }
+  setInterval(tick, 1600);
+
+  /* ── preview chart ── */
+  const mpLine = document.getElementById('mpLine');
+  const mpFill = document.getElementById('mpFill');
+  const mpCandles = document.getElementById('mpCandles');
+  let chartDrift = 0;
+  function drawMini() {
+    const pts = Array.from({length:16},(_,i)=>{
+      return 61420 + Math.sin(i/2+chartDrift)*3800 + (Math.random()-0.5)*1200;
+    });
+    const mn=Math.min(...pts), mx=Math.max(...pts), rng=mx-mn||1;
+    const W=500,H=180,P=20,step=(W-P*2)/(pts.length-1);
+    const d = pts.map((v,i)=>{
+      const x=(P+i*step).toFixed(1);
+      const y=(H-P-((v-mn)/rng)*(H-P*2)).toFixed(1);
+      return `${i===0?'M':'L'} ${x} ${y}`;
+    }).join(' ');
+    mpLine.setAttribute('d',d);
+    mpFill.setAttribute('d',`${d} L ${(P+(pts.length-1)*step).toFixed(1)} ${H} L ${P} ${H} Z`);
+    mpCandles.innerHTML='';
+    pts.forEach((v,i)=>{
+      const x=P+i*step, y=H-P-((v-mn)/rng)*(H-P*2);
+      const ch=6+Math.random()*14;
+      const up=v>=61420;
+      const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x',x-5); r.setAttribute('y',y-ch/2);
+      r.setAttribute('width',10); r.setAttribute('height',ch);
+      r.setAttribute('rx',3); r.setAttribute('fill',up?'#34d399':'#f87171');
+      r.setAttribute('opacity','0.9');
+      mpCandles.appendChild(r);
+    });
+    chartDrift+=0.25;
+  }
+  drawMini(); setInterval(drawMini,1800);
+
+  /* ── market tabs ── */
+  document.querySelectorAll('.market-tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.market-tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+  /* ── wallet modal ── */
+  const walletModal=document.getElementById('walletModal');
+  const wOptions=document.getElementById('wOptions');
+  const wStatus=document.getElementById('wStatus');
+  const wStatusTxt=document.getElementById('wStatusTxt');
+  const connectedPill=document.getElementById('connectedPill');
+  const connAddr=document.getElementById('connAddr');
+  const connObz=document.getElementById('connObz');
+  const openWalletBtn = document.getElementById('openWalletBtn');
+  const defaultStatusHtml = wStatus.innerHTML;
+  const OBZ_TOKEN_ADDRESS = '0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7';
+  const BSC_TESTNET_RPC = 'https://data-seed-prebsc-1-s1.binance.org:8545/';
+  const BSC_TESTNET_CHAIN_ID = '0x61';
+  const discoveredProviders = [];
+  let activeProvider = null;
+  let activeWalletName = '';
+  const langTh = document.getElementById('langTh');
+  const langEn = document.getElementById('langEn');
+
+  const homeI18n = {
+    th: {
+      navMarkets: 'ตลาด',
+      navTrade: 'เทรด',
+      navEarn: 'รับผลตอบแทน',
+      navMining: 'ขุดเหรียญ',
+      navLearn: 'เรียนรู้',
+      login: 'เข้าสู่ระบบ',
+      start: 'เริ่มต้น',
+      wallet: 'วอลเล็ต',
+      heroBadge: '● Live · 150+ คู่สปอต และ 80+ คู่ฟิวเจอร์ส',
+      heroTitle: 'เทรดคริปโต<br/><span>อย่างมืออาชีพ</span>',
+      heroDesc: 'OBZ Exchange มอบค่าธรรมเนียมต่ำ สภาพคล่องลึก และเทอร์มินัลเรียลไทม์สำหรับนักเทรดจริงจัง',
+      heroExplore: 'สำรวจตลาด →'
+    },
+    en: {
+      navMarkets: 'Markets',
+      navTrade: 'Trade',
+      navEarn: 'Earn',
+      navMining: 'Mining',
+      navLearn: 'Learn',
+      login: 'Log In',
+      start: 'Get Started',
+      wallet: 'Wallet',
+      heroBadge: '● Live · 150+ Spot & 80+ Futures Pairs',
+      heroTitle: 'Trade Crypto<br/><span>Like a Pro</span>',
+      heroDesc: 'OBZ Exchange delivers ultra-low fees, deep liquidity, and a real-time terminal built for serious traders.',
+      heroExplore: 'Explore Markets →'
+    }
+  };
+
+  function shortAddr(addr){
+    if(!addr || addr.length < 10) return addr || 'Not connected';
+    return `${addr.slice(0,6)}...${addr.slice(-4)}`;
+  }
+
+  function applyHomeLanguage(lang){
+    const pack = homeI18n[lang] || homeI18n.en;
+    document.getElementById('navMarkets').textContent = pack.navMarkets;
+    document.getElementById('navTrade').textContent = pack.navTrade;
+    document.getElementById('navEarn').textContent = pack.navEarn;
+    document.getElementById('navMining').textContent = pack.navMining;
+    document.getElementById('navLearn').textContent = pack.navLearn;
+    document.getElementById('openLogin').textContent = pack.login;
+    document.getElementById('openRegister').textContent = pack.start;
+    document.getElementById('openWalletBtn').textContent = `🔗 ${pack.wallet}`;
+    document.getElementById('heroBadge').textContent = pack.heroBadge;
+    document.getElementById('heroTitle').innerHTML = pack.heroTitle;
+    document.getElementById('heroDesc').textContent = pack.heroDesc;
+    document.getElementById('heroExplore').textContent = pack.heroExplore;
+    if(langTh && langEn){
+      langTh.classList.toggle('active', lang === 'th');
+      langEn.classList.toggle('active', lang !== 'th');
+    }
+  }
+
+  function normalizeInfo(info){
+    return {
+      name: (info && info.name) || 'Wallet',
+      rdns: (info && info.rdns) || '',
+      icon: (info && info.icon) || ''
+    };
+  }
+
+  function providerKey(detail){
+    const info = normalizeInfo(detail && detail.info);
+    return `${info.rdns}|${info.name}`;
+  }
+
+  function addDiscoveredProvider(detail){
+    if(!detail || !detail.provider) return;
+    const key = providerKey(detail);
+    const exists = discoveredProviders.some((p) => providerKey(p) === key);
+    if(!exists) discoveredProviders.push(detail);
+  }
+
+  window.addEventListener('eip6963:announceProvider', (event) => {
+    addDiscoveredProvider(event.detail);
+  });
+
+  window.dispatchEvent(new Event('eip6963:requestProvider'));
+
+  function setDisconnected(){
+    connAddr.textContent = 'Not connected';
+    connAddr.title = '';
+    connObz.textContent = 'OBZ: --';
+    connectedPill.classList.remove('show');
+    openWalletBtn.style.display = '';
+  }
+
+  function setConnected(address){
+    connAddr.textContent = shortAddr(address);
+    connAddr.title = activeWalletName ? `${address} · ${activeWalletName}` : address;
+    connObz.textContent = 'OBZ: ...';
+    connectedPill.classList.add('show');
+    openWalletBtn.style.display = 'none';
+    refreshObzBalance(address);
+  }
+
+  function formatTokenAmount(raw, decimals=18, maxFrac=4){
+    const base = 10n ** BigInt(decimals);
+    const whole = raw / base;
+    const frac = raw % base;
+    let fracStr = frac.toString().padStart(decimals, '0').slice(0, maxFrac);
+    fracStr = fracStr.replace(/0+$/, '');
+    return fracStr ? `${whole.toString()}.${fracStr}` : whole.toString();
+  }
+
+  async function readObzBalance(address){
+    const target = address.replace(/^0x/, '').toLowerCase().padStart(64, '0');
+    const data = `0x70a08231${target}`;
+    const body = {
+      jsonrpc: '2.0',
+      method: 'eth_call',
+      params: [{ to: OBZ_TOKEN_ADDRESS, data }, 'latest'],
+      id: Date.now()
+    };
+    const res = await fetch(BSC_TESTNET_RPC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error('RPC failed');
+    const json = await res.json();
+    if(json.error || !json.result) throw new Error('Invalid RPC response');
+    const raw = BigInt(json.result);
+    return formatTokenAmount(raw, 18, 4);
+  }
+
+  async function refreshObzBalance(address){
+    if(!address) return;
+    try {
+      const bal = await readObzBalance(address);
+      connObz.textContent = `OBZ: ${bal}`;
+    } catch {
+      connObz.textContent = 'OBZ: n/a';
+    }
+  }
+
+  async function ensureBscTestnet(provider){
+    if(!provider) return false;
+    try {
+      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BSC_TESTNET_CHAIN_ID }] });
+      return true;
+    } catch (err) {
+      if(err && err.code === 4902){
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: BSC_TESTNET_CHAIN_ID,
+            chainName: 'BSC Testnet',
+            nativeCurrency: { name: 'tBNB', symbol: 'tBNB', decimals: 18 },
+            rpcUrls: [BSC_TESTNET_RPC],
+            blockExplorerUrls: ['https://testnet.bscscan.com']
+          }]
+        });
+        return true;
+      }
+      throw err;
+    }
+  }
+
+  async function addObzToWallet(provider){
+    if(!provider) return false;
+    try {
+      return await provider.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: OBZ_TOKEN_ADDRESS,
+            symbol: 'OBZ',
+            decimals: 18
+          }
+        }
+      });
+    } catch {
+      return false;
+    }
+  }
+
+  function showStatus(message){
+    wOptions.style.display='none';
+    wStatus.innerHTML = defaultStatusHtml;
+    document.getElementById('wStatusTxt').textContent = message;
+    wStatus.classList.add('show');
+  }
+
+  function injectedProviderList(){
+    if(!window.ethereum) return [];
+    if(Array.isArray(window.ethereum.providers) && window.ethereum.providers.length){
+      return window.ethereum.providers;
+    }
+    return [window.ethereum];
+  }
+
+  function matchInjectedProvider(walletName){
+    const providers = injectedProviderList();
+    const name = (walletName || '').toLowerCase();
+    return providers.find((p) => {
+      const marker = ((p && p.providerInfo && p.providerInfo.name) || '').toLowerCase();
+      if(name === 'metamask') return !!p.isMetaMask || marker.includes('metamask');
+      if(name === 'trust') return !!p.isTrust || marker.includes('trust');
+      if(name === 'coinbase') return !!p.isCoinbaseWallet || marker.includes('coinbase');
+      if(name === 'phantom') return !!p.isPhantom || marker.includes('phantom');
+      if(name === 'walletconnect') return marker.includes('walletconnect');
+      return false;
+    }) || null;
+  }
+
+  function pickProvider(walletName){
+    const name = (walletName || '').toLowerCase();
+    const discovered = discoveredProviders.find((p) => {
+      const info = normalizeInfo(p.info);
+      const rdns = info.rdns.toLowerCase();
+      const iname = info.name.toLowerCase();
+      if(name === 'metamask') return rdns.includes('metamask') || iname.includes('metamask') || !!p.provider.isMetaMask;
+      if(name === 'trust') return rdns.includes('trust') || iname.includes('trust') || !!p.provider.isTrust;
+      if(name === 'coinbase') return rdns.includes('coinbase') || iname.includes('coinbase') || !!p.provider.isCoinbaseWallet;
+      if(name === 'phantom') return rdns.includes('phantom') || iname.includes('phantom') || !!p.provider.isPhantom;
+      if(name === 'walletconnect') return rdns.includes('walletconnect') || iname.includes('walletconnect');
+      return false;
+    });
+    if(discovered) return { provider: discovered.provider, name: normalizeInfo(discovered.info).name };
+
+    const injected = matchInjectedProvider(walletName);
+    if(injected) return { provider: injected, name: walletName };
+
+    if(name === 'metamask' && window.ethereum) return { provider: window.ethereum, name: 'MetaMask' };
+    return null;
+  }
+
+  function bindProviderEvents(provider){
+    if(!provider || provider.__obzBound || typeof provider.on !== 'function') return;
+    provider.__obzBound = true;
+    provider.on('accountsChanged', (accounts) => {
+      if(accounts && accounts[0]) setConnected(accounts[0]);
+      else setDisconnected();
+    });
+    provider.on('chainChanged', () => {
+      syncConnectedAccount(provider);
+    });
+  }
+
+  async function syncConnectedAccount(providerOverride){
+    const provider = providerOverride || activeProvider || window.ethereum;
+    if(!provider) {
+      setDisconnected();
+      return;
+    }
+    try {
+      const accounts = await provider.request({ method: 'eth_accounts' });
+      if(accounts && accounts[0]) setConnected(accounts[0]);
+      else setDisconnected();
+    } catch {
+      setDisconnected();
+    }
+  }
+
+  function openWallet(){ walletModal.classList.add('open'); }
+  function closeWallet(){
+    walletModal.classList.remove('open');
+    wStatus.classList.remove('show');
+    wOptions.style.display='';
+    wStatus.innerHTML = defaultStatusHtml;
+  }
+  document.getElementById('openWalletBtn').addEventListener('click',openWallet);
+  document.getElementById('wClose').addEventListener('click',closeWallet);
+  walletModal.addEventListener('click',e=>{ if(e.target===walletModal) closeWallet(); });
+  connectedPill.addEventListener('click',openWallet);
+
+  document.querySelectorAll('.wallet-row').forEach(row=>{
+    row.addEventListener('click',async ()=>{
+      const name=row.dataset.w;
+      const picked = pickProvider(name);
+      if(!picked || !picked.provider){
+        showStatus(`${name} provider not found in this browser.`);
+        return;
+      }
+
+      activeProvider = picked.provider;
+      activeWalletName = picked.name || name;
+      bindProviderEvents(activeProvider);
+
+      showStatus(`Connecting to ${activeWalletName}...`);
+      try {
+        const accounts = await activeProvider.request({ method: 'eth_requestAccounts' });
+        const address = accounts && accounts[0];
+        if(!address){
+          showStatus(`No account returned from ${activeWalletName}. Please unlock wallet and try again.`);
+          return;
+        }
+
+        showStatus(`Preparing ${activeWalletName} for OBZ on BSC Testnet...`);
+        try {
+          await ensureBscTestnet(activeProvider);
+        } catch {
+          showStatus('Please switch your wallet network to BSC Testnet and try again.');
+          return;
+        }
+
+        setConnected(address);
+        let obzBalanceText = connObz.textContent.replace('OBZ: ', '');
+        try {
+          obzBalanceText = await readObzBalance(address);
+          connObz.textContent = `OBZ: ${obzBalanceText}`;
+        } catch {}
+        const added = await addObzToWallet(activeProvider);
+        wStatus.innerHTML = `<div style="font-size:44px;margin-bottom:8px;">✅</div><div style="color:var(--green);font-weight:700;font-size:1rem;">Connected!</div><div style="color:var(--muted);font-size:12px;font-family:monospace;margin-top:6px;">${shortAddr(address)} · ${activeWalletName}</div><div style="color:var(--cyan);font-size:12px;margin-top:6px;">OBZ Balance: ${obzBalanceText}</div><div style="color:${added ? 'var(--green)' : 'var(--muted)'};font-size:12px;margin-top:6px;">${added ? 'OBZ token added to wallet.' : 'If OBZ is not visible, approve Add Token in your wallet.'}</div>`;
+        setTimeout(closeWallet,1300);
+      } catch (err) {
+        const msg = err && err.code === 4001 ? 'Connection request was rejected.' : `Failed to connect ${activeWalletName || 'wallet'}.`;
+        showStatus(msg);
+      }
+    });
+  });
+
+  if(window.ethereum) bindProviderEvents(window.ethereum);
+
+  if(langTh && langEn){
+    langTh.addEventListener('click', () => applyHomeLanguage('th'));
+    langEn.addEventListener('click', () => applyHomeLanguage('en'));
+  }
+  applyHomeLanguage('th');
+  syncConnectedAccount();
+
+  /* ── auth modal ── */
+  const authModal=document.getElementById('authModal');
+  const authTitle=document.getElementById('authTitle');
+  const authSub=document.getElementById('authSub');
+  const authSubmit=document.getElementById('authSubmit');
+  const authToggle=document.getElementById('authToggle');
+  const authRegExtra=document.getElementById('authRegExtra');
+  let isLogin=true;
+
+  function openAuth(login=true){
+    isLogin=login;
+    authTitle.textContent=login?'Welcome Back':'Create Account';
+    authSub.textContent=login?'Sign in to your OBZ account':'Join 2.4M+ traders on OBZ';
+    authSubmit.textContent=login?'Sign In':'Create Account';
+    authToggle.textContent=login?'Create one →':'Sign in →';
+    document.getElementById('authSwitch').firstChild.textContent=login?"Don't have an account? ":"Already have an account? ";
+    authRegExtra.style.display=login?'none':'block';
+    authModal.classList.add('open');
+  }
+  function closeAuth(){ authModal.classList.remove('open'); }
+
+  document.getElementById('openLogin').addEventListener('click',()=>openAuth(true));
+  ['openRegister','heroRegister','freeRegister','proRegister','ctaRegister'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('click',()=>openAuth(false));
+  });
+  document.getElementById('authClose').addEventListener('click',closeAuth);
+  authModal.addEventListener('click',e=>{ if(e.target===authModal) closeAuth(); });
+  authToggle.addEventListener('click',()=>openAuth(!isLogin));
+  authSubmit.addEventListener('click',()=>{
+    authSubmit.textContent='✓ Done!';
+    authSubmit.style.background='rgba(52,211,153,0.3)';
+    setTimeout(closeAuth,1000);
+  });
+</script>
+<!-- ═══════════ OBZ AI ASSISTANT WIDGET ═══════════ -->
+<style>
+  .ai-fab {
+    position: fixed; bottom: 28px; right: 28px; z-index: 8000;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: linear-gradient(135deg, #67e8f9, #a855f7);
+    border: 0; cursor: pointer;
+    box-shadow: 0 8px 32px rgba(103,232,249,0.38);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ai-fab:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(103,232,249,0.5); }
+  .ai-fab .ai-badge {
+    position: absolute; top: -3px; right: -3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #34d399; border: 2px solid #030b1a;
+    font-size: 10px; display: flex; align-items: center; justify-content: center;
+    color: #030b1a; font-weight: 900;
+  }
+  .ai-panel {
+    position: fixed; bottom: 100px; right: 28px; z-index: 8001;
+    width: 380px; max-width: 96vw;
+    background: linear-gradient(145deg, rgba(6,14,32,0.98), rgba(14,28,60,0.98));
+    border: 1px solid rgba(103,232,249,0.26);
+    border-radius: 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    display: none; flex-direction: column; overflow: hidden;
+    animation: aiSlideUp 0.22s ease;
+  }
+  .ai-panel.open { display: flex; }
+  @keyframes aiSlideUp { from { transform:translateY(16px);opacity:0; } to { transform:translateY(0);opacity:1; } }
+  .ai-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px;
+    background: linear-gradient(90deg, rgba(103,232,249,0.12), rgba(168,85,247,0.12));
+    border-bottom: 1px solid rgba(103,232,249,0.14);
+  }
+  .ai-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #67e8f9, #a855f7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .ai-header-info .ai-name { font-weight: 800; font-size: 15px; }
+  .ai-header-info .ai-status { font-size: 12px; color: #34d399; display: flex; align-items: center; gap: 5px; }
+  .ai-header-info .ai-status::before { content:'●'; font-size:8px; }
+  .ai-close-btn { margin-left: auto; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: #8baac4; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .ai-messages {
+    flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    max-height: 340px; min-height: 220px;
+  }
+  .ai-messages::-webkit-scrollbar { width: 3px; }
+  .ai-messages::-webkit-scrollbar-thumb { background: rgba(103,232,249,0.2); border-radius: 2px; }
+  .ai-msg { display: flex; gap: 10px; align-items: flex-end; }
+  .ai-msg.user { flex-direction: row-reverse; }
+  .ai-bubble {
+    max-width: 78%; padding: 10px 14px; border-radius: 16px;
+    font-size: 13px; line-height: 1.55;
+  }
+  .ai-msg.bot .ai-bubble { background: rgba(103,232,249,0.1); border: 1px solid rgba(103,232,249,0.18); color: #f8fafc; border-bottom-left-radius: 4px; }
+  .ai-msg.user .ai-bubble { background: linear-gradient(135deg, rgba(103,232,249,0.22), rgba(168,85,247,0.22)); border: 1px solid rgba(103,232,249,0.26); color: #f8fafc; border-bottom-right-radius: 4px; }
+  .ai-msg-icon { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,#67e8f9,#a855f7); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .ai-msg.user .ai-msg-icon { background: rgba(255,255,255,0.1); }
+  .ai-typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; background: rgba(103,232,249,0.07); border-radius: 16px; border-bottom-left-radius: 4px; width: fit-content; }
+  .ai-typing span { width: 6px; height: 6px; border-radius: 50%; background: #67e8f9; animation: typingDot 1.2s infinite; }
+  .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:0.4;} 30%{transform:translateY(-5px);opacity:1;} }
+  .ai-quick-btns { display: flex; gap: 6px; padding: 0 16px 12px; flex-wrap: wrap; }
+  .ai-quick { padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(103,232,249,0.22); background: rgba(103,232,249,0.07); color: #67e8f9; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s; white-space: nowrap; }
+  .ai-quick:hover { background: rgba(103,232,249,0.18); }
+  .ai-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid rgba(103,232,249,0.1); }
+  .ai-input { flex: 1; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.04); color: #f8fafc; outline: none; font-size: 13px; }
+  .ai-input:focus { border-color: rgba(103,232,249,0.36); }
+  .ai-send { width: 38px; height: 38px; border-radius: 10px; border: 0; background: linear-gradient(135deg,#67e8f9,#a855f7); color: #030b1a; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; }
+  .ai-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin: 2px 2px 0 0; }
+  .ai-tag.buy { background: rgba(52,211,153,0.18); color: #34d399; }
+  .ai-tag.sell { background: rgba(248,113,113,0.18); color: #f87171; }
+  .ai-tag.info { background: rgba(103,232,249,0.12); color: #67e8f9; }
+    /* ─── MOBILE RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-actions { gap: 6px; }
+      .nav-actions .btn { padding: 6px 10px; font-size: 12px; }
+      .hero { padding: 110px 16px 48px; }
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 0.95rem; }
+      .hero-cta { flex-direction: column; align-items: stretch; gap: 10px; }
+      .hero-cta .btn-primary, .hero-cta .btn-outline { padding: 13px 20px; font-size: 15px; }
+      .price-strip { gap: 10px; }
+      .price-card { min-width: 140px; padding: 12px 16px; }
+      .stats-band { flex-direction: column; }
+      .stat-item { max-width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
+      .markets-section { padding: 24px 14px; }
+      .market-table-head { flex-direction: column; gap: 10px; align-items: flex-start; }
+      .market-tabs { flex-wrap: wrap; }
+      table { font-size: 12px; }
+      th, td { padding: 8px 8px; }
+      .features-grid { grid-template-columns: 1fr; gap: 14px; }
+      .trade-preview { grid-template-columns: 1fr; gap: 24px; }
+      .fees-grid { grid-template-columns: 1fr; gap: 14px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      section { padding: 48px 16px; }
+      .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .kpi .val { font-size: 1.2rem; }
+      .grid-2, .grid-3, .grid-2b, .two-col, .three-col { grid-template-columns: 1fr !important; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .miner-item { flex-wrap: wrap; }
+      .wc-row { flex-direction: column; }
+      .wc-actions { flex-wrap: wrap; }
+      .wbtn { flex: 1; min-width: 100px; }
+      .withdraw-card { padding: 16px; }
+      .page { padding: 20px 14px 60px; }
+      .page-hero { padding: 40px 16px 32px; }
+      .shield-icon { font-size: 56px; }
+      .overall-bar { gap: 12px; }
+      .score-ring { width: 100px; height: 100px; }
+      .score-ring svg { width: 100px; height: 100px; }
+      .score-val { font-size: 1.2rem; }
+      .protect-card { padding: 16px; }
+      .topbar { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 52px; gap: 6px; padding-top: 6px; padding-bottom: 6px; }
+      .pair-meta { display: none; }
+      .tb-title { font-size: 0.9rem; }
+      .trade-layout { grid-template-columns: 1fr !important; grid-template-rows: auto !important; height: auto; overflow: visible; }
+      .book-pane { display: none; }
+      .form-pane { grid-column: 1; grid-row: auto; height: auto; }
+      .bottom-pane { grid-column: 1; grid-row: auto; height: 200px; }
+      .chart-pane { grid-column: 1; grid-row: auto; height: 280px; }
+      .pane { display: none; }
+      .chart-area { height: 220px; }
+      .sidebar { width: 100%; min-height: auto; position: relative; height: auto; }
+      .main { width: 100%; }
+      .app { flex-direction: column; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ai-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
+      .ai-fab { bottom: 16px; right: 16px; width: 50px; height: 50px; font-size: 22px; }
+    }
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.7rem; }
+      .nav-brand { font-size: 1.1rem; }
+      .overall-bar { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+
+<!-- FAB Button -->
+<button class="ai-fab" id="aiFab" title="OBZ AI Assistant">
+  🤖
+  <div class="ai-badge">AI</div>
+</button>
+
+<!-- AI Panel -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-header">
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-header-info">
+      <div class="ai-name">OBZ AI Assistant</div>
+      <div class="ai-status">Online · Real-time market analysis</div>
+    </div>
+    <button class="ai-close-btn" id="aiClose">✕</button>
+  </div>
+  <div class="ai-messages" id="aiMessages"></div>
+  <div class="ai-quick-btns" id="aiQuick">
+    <button class="ai-quick" data-q="วิเคราะห์ BTC ตอนนี้">📊 วิเคราะห์ BTC</button>
+    <button class="ai-quick" data-q="ค่าธรรมเนียมเท่าไหร่">💰 ค่าธรรมเนียม</button>
+    <button class="ai-quick" data-q="วิธี Connect Wallet">🔗 Connect Wallet</button>
+    <button class="ai-quick" data-q="แนะนำ coin น่าลงทุน">🚀 แนะนำ coin</button>
+  </div>
+  <div class="ai-input-row">
+    <input class="ai-input" id="aiInput" placeholder="พิมพ์คำถาม…" />
+    <button class="ai-send" id="aiSendBtn">➤</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const fab = document.getElementById('aiFab');
+  const panel = document.getElementById('aiPanel');
+  const closeBtn = document.getElementById('aiClose');
+  const msgs = document.getElementById('aiMessages');
+  const input = document.getElementById('aiInput');
+  const sendBtn = document.getElementById('aiSendBtn');
+  const quickBtns = document.querySelectorAll('.ai-quick');
+
+  const responses = {
+    'btc': () => `<b>🔍 BTC/USDT Analysis</b><br><br><span class="ai-tag buy">LONG BIAS</span><span class="ai-tag info">HIGH CONFIDENCE</span><br><br>ราคาปัจจุบัน <b style="color:#67e8f9">${(61000+Math.random()*1000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',')}</b><br><br>📈 <b>Momentum:</b> Strong Buy<br>📊 <b>RSI:</b> 68.4 — ใกล้ overbought<br>💎 <b>VWAP:</b> ราคาเหนือ VWAP บวก<br>🎯 <b>Target:</b> $62,400 — $63,200<br>🛡️ <b>Stop Loss:</b> $60,200<br><br><i style="color:#8baac4;font-size:12px;">⚠️ ไม่ใช่คำแนะนำการลงทุน</i>`,
+    'ค่าธรรมเนียม|fee|fees': () => `<b>💰 OBZ Fee Structure</b><br><br><span class="ai-tag buy">Maker 0.02%</span> <span class="ai-tag sell">Taker 0.04%</span><br><br>🥇 <b>Starter:</b> 0.10% / 0.08%<br>💎 <b>Pro (hold 500 OBZ):</b> 0.04% / 0.02%<br>🏢 <b>Institutional:</b> 0.01% / 0.00%<br><br>ถือ OBZ token ลดค่าธรรมเนียมได้ถึง <b style="color:#34d399">60%</b>`,
+    'wallet|connect': () => `<b>🔗 วิธี Connect Wallet</b><br><br>1️⃣ กดปุ่ม <b>"🔗 Wallet"</b> ที่ navbar<br>2️⃣ เลือก wallet ที่ต้องการ:<br>&nbsp;&nbsp;• 🦊 <b>MetaMask</b> — browser extension<br>&nbsp;&nbsp;• 🔵 <b>WalletConnect</b> — scan QR<br>&nbsp;&nbsp;• 👻 <b>Phantom</b> — Solana wallet<br>3️⃣ กด Approve ในแอป wallet<br>4️⃣ ✅ เชื่อมต่อสำเร็จ!<br><br>รองรับ EVM, Solana, Cosmos`,
+    'coin|แนะนำ|ลงทุน|invest': () => `<b>🚀 Top Picks — Week of Aug 2026</b><br><br><span class="ai-tag buy">HIGH POTENTIAL</span><br><br>1. <b>OBZ</b> +12.4% — native token momentum<br>2. <b>SOL</b> +3.1% — ecosystem growth<br>3. <b>BTC</b> +2.4% — institutional buying<br><br><span class="ai-tag sell">CAUTION</span><br>4. <b>BNB</b> -1.0% — regulatory news<br><br><i style="color:#8baac4;font-size:12px;">⚠️ DYOR — ไม่ใช่คำแนะนำการลงทุน</i>`,
+    'obz': () => `<b>💎 OBZ Token</b><br><br>ราคา: <b style="color:#67e8f9">$4.218</b> <span class="ai-tag buy">+12.4%</span><br><br>🔥 <b>ประโยชน์ของ OBZ:</b><br>• ลดค่าธรรมเนียม 60%<br>• รับ Mining Rewards<br>• Governance voting<br>• Staking APY ~18%<br><br>Market Cap: <b>$4.2B</b> | Rank: #42`,
+    'สมัคร|register|account|เปิดบัญชี': () => `<b>✅ สมัครสมาชิก OBZ</b><br><br>1. กดปุ่ม <b>"Get Started"</b> ด้านบน<br>2. กรอก Email + Password<br>3. Verify email<br>4. เริ่มเทรดได้ทันที!<br><br>⚡ ฟรี — ไม่มีค่าใช้จ่าย<br>🎁 รับ OBZ token <b>5 OBZ</b> ฟรีเมื่อสมัคร`,
+    'default': (q) => `<b>🤖 AI Analysis</b><br><br>ผมได้รับคำถามเกี่ยวกับ "<b>${q}</b>"<br><br>สิ่งที่ผมช่วยได้:<br>• 📊 วิเคราะห์ราคา BTC, ETH, OBZ<br>• 💰 ข้อมูลค่าธรรมเนียม<br>• 🔗 วิธี connect wallet<br>• 🚀 แนะนำ coin น่าสนใจ<br>• 📖 วิธีใช้ platform<br><br>ลองถามใหม่อีกครั้งนะครับ 😊`
+  };
+
+  function getReply(q) {
+    const lq = q.toLowerCase();
+    for (const [key, fn] of Object.entries(responses)) {
+      if (key === 'default') continue;
+      if (key.split('|').some(k => lq.includes(k))) return fn(q);
+    }
+    return responses.default(q);
+  }
+
+  function addMsg(html, type) {
+    const row = document.createElement('div');
+    row.className = `ai-msg ${type}`;
+    const icon = document.createElement('div');
+    icon.className = 'ai-msg-icon';
+    icon.textContent = type === 'bot' ? '🤖' : '👤';
+    const bubble = document.createElement('div');
+    bubble.className = 'ai-bubble';
+    bubble.innerHTML = html;
+    row.appendChild(icon);
+    row.appendChild(bubble);
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function showTyping() {
+    const row = document.createElement('div');
+    row.className = 'ai-msg bot'; row.id = 'aiTypingRow';
+    const icon = document.createElement('div'); icon.className='ai-msg-icon'; icon.textContent='🤖';
+    const t = document.createElement('div'); t.className='ai-typing';
+    t.innerHTML='<span></span><span></span><span></span>';
+    row.appendChild(icon); row.appendChild(t);
+    msgs.appendChild(row); msgs.scrollTop=msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const r = document.getElementById('aiTypingRow'); if(r) r.remove();
+  }
+
+  function send(q) {
+    if (!q.trim()) return;
+    addMsg(q, 'user');
+    input.value = '';
+    showTyping();
+    const delay = 900 + Math.random() * 600;
+    setTimeout(() => { removeTyping(); addMsg(getReply(q), 'bot'); }, delay);
+  }
+
+  fab.addEventListener('click', () => {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open') && msgs.children.length === 0) {
+      setTimeout(() => addMsg(`สวัสดีครับ! 👋 ผม <b>OBZ AI</b> ผู้ช่วยด้านการเทรดของคุณ<br><br>ผมช่วยวิเคราะห์ตลาด, แนะนำ coin, และตอบทุกคำถามเกี่ยวกับ OBZ Exchange ได้ครับ 🚀`, 'bot'), 200);
+    }
+  });
+  closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+  sendBtn.addEventListener('click', () => send(input.value));
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') send(input.value); });
+  quickBtns.forEach(b => b.addEventListener('click', () => { panel.classList.add('open'); send(b.dataset.q); }));
+})();
+</script>
+<!-- ═══════════ END OBZ AI ASSISTANT WIDGET ═══════════ -->
+</body>
+</html>
+
+
+

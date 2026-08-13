@@ -1,0 +1,997 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>OBZ Exchange · Trade BTC/USDT</title>
+  <style>
+    :root{
+      --bg:#030b1a;--bg2:#06122a;--panel:rgba(6,14,32,0.94);
+      --line:rgba(103,232,249,0.14);--text:#f8fafc;--muted:#8baac4;
+      --cyan:#67e8f9;--green:#34d399;--purple:#a855f7;
+      --red:#f87171;--orange:#fb923c;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Inter,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+    /* TOP BAR */
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:0 16px;height:52px;
+      background:rgba(4,12,28,0.97);
+      border-bottom:1px solid var(--line);
+      flex-shrink:0;
+    }
+    .brand{font-size:1.1rem;font-weight:900;letter-spacing:0.05em;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .pair-select{display:flex;align-items:center;gap:8px;padding:0 14px;}
+    .pair-name{font-size:1rem;font-weight:800;}
+    .pair-price{font-size:1.1rem;font-weight:800;color:var(--green);}
+    .pair-change{font-size:12px;color:var(--green);}
+    .pair-meta{display:flex;gap:16px;font-size:12px;color:var(--muted);}
+    .pair-meta span b{color:var(--text);}
+    .top-actions{display:flex;gap:8px;align-items:center;}
+    .tbtn{padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);font-weight:700;cursor:pointer;font-size:13px;transition:0.18s;}
+    .tbtn:hover{border-color:var(--cyan);background:rgba(103,232,249,0.08);}
+    .tbtn.primary{background:linear-gradient(90deg,var(--cyan),var(--purple));border:0;color:#fff;box-shadow:0 0 16px rgba(103,232,249,0.18);}
+    .lang-label{display:inline-flex;align-items:center;padding:0 10px;height:34px;border-radius:8px;border:1px solid rgba(103,232,249,0.24);background:rgba(103,232,249,0.08);color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:0.04em;}
+    .lang-toggle{display:flex;align-items:center;gap:6px;padding:4px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(103,232,249,0.16);}
+    .lang-chip{padding:6px 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:12px;font-weight:800;cursor:pointer;transition:0.15s;white-space:nowrap;}
+    .lang-chip.active{background:rgba(103,232,249,0.12);border-color:rgba(103,232,249,0.24);color:var(--cyan);}
+
+    /* MAIN LAYOUT */
+    .trade-layout{
+      display:grid;
+      grid-template-columns:220px 1fr 300px 240px;
+      grid-template-rows:1fr 220px;
+      flex:1;
+      overflow:hidden;
+      gap:0;
+    }
+
+    /* PANELS */
+    .pane{background:var(--panel);border-right:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;}
+    .pane-head{padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+    .pane-head span{color:var(--cyan);}
+    .pane-body{flex:1;overflow-y:auto;padding:0;}
+    .pane-body::-webkit-scrollbar{width:3px;}
+    .pane-body::-webkit-scrollbar-thumb{background:var(--line);}
+
+    /* WATCHLIST */
+    .watch-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background 0.15s;}
+    .watch-item:hover,.watch-item.active{background:rgba(103,232,249,0.06);}
+    .wi-pair{font-weight:700;font-size:13px;}
+    .wi-price{font-size:13px;font-weight:700;color:var(--cyan);}
+    .wi-chg{font-size:11px;font-weight:700;}
+    .wi-chg.up{color:var(--green);}
+    .wi-chg.dn{color:var(--red);}
+
+    /* CHART AREA */
+    .chart-pane{grid-column:2;grid-row:1;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--bg);}
+    .chart-toolbar{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);flex-shrink:0;flex-wrap:wrap;align-items:center;}
+    .ct-btn{padding:4px 10px;border-radius:6px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:0.15s;}
+    .ct-btn.active,.ct-btn:hover{background:rgba(103,232,249,0.1);color:var(--cyan);}
+    .ct-sep{width:1px;height:16px;background:var(--line);margin:0 4px;}
+    .chart-area{flex:1;position:relative;overflow:hidden;}
+    .chart-area svg{width:100%;height:100%;}
+
+    /* ORDER BOOK */
+    .book-pane{grid-column:3;grid-row:1/3;border-right:1px solid var(--line);display:flex;flex-direction:column;}
+    .book-tabs{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--line);}
+    .book-tab{flex:1;padding:5px;border-radius:6px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:0.15s;text-align:center;}
+    .book-tab.active{background:rgba(103,232,249,0.1);color:var(--cyan);}
+    .book-hdr{display:grid;grid-template-columns:1fr 1fr 1fr;padding:6px 10px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;}
+    .book-body{flex:1;overflow-y:auto;}
+    .book-body::-webkit-scrollbar{width:3px;}
+    .book-body::-webkit-scrollbar-thumb{background:var(--line);}
+    .book-row{display:grid;grid-template-columns:1fr 1fr 1fr;padding:4px 10px;font-size:12px;position:relative;cursor:pointer;}
+    .book-row::before{content:'';position:absolute;top:0;bottom:0;right:0;background:rgba(244,114,182,0.08);}
+    .book-row.buy::before{background:rgba(52,211,153,0.08);}
+    .book-row.sell .col-price{color:var(--red);}
+    .book-row.buy .col-price{color:var(--green);}
+    .spread-row{text-align:center;padding:8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px;font-weight:800;color:var(--cyan);background:rgba(103,232,249,0.04);}
+
+    /* ORDER FORM */
+    .form-pane{grid-column:4;grid-row:1/3;display:flex;flex-direction:column;background:var(--panel);}
+    .form-tabs{display:flex;border-bottom:1px solid var(--line);}
+    .form-tab{flex:1;padding:12px;text-align:center;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:0.18s;}
+    .form-tab.buy{color:var(--green);}
+    .form-tab.sell{color:var(--red);}
+    .form-tab.buy.active{border-bottom-color:var(--green);background:rgba(52,211,153,0.06);}
+    .form-tab.sell.active{border-bottom-color:var(--red);background:rgba(248,113,113,0.06);}
+    .form-body{padding:14px 12px;flex:1;overflow-y:auto;}
+    .order-types{display:flex;gap:6px;margin-bottom:14px;}
+    .ot-btn{flex:1;padding:6px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:700;font-size:12px;cursor:pointer;transition:0.15s;}
+    .ot-btn.active{background:rgba(103,232,249,0.1);border-color:rgba(103,232,249,0.28);color:var(--cyan);}
+    .f-row{margin-bottom:10px;}
+    .f-lbl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;}
+    .f-input{width:100%;padding:9px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;background:rgba(255,255,255,0.04);color:var(--text);outline:none;font-size:13px;}
+    .f-input:focus{border-color:rgba(103,232,249,0.36);box-shadow:0 0 0 2px rgba(103,232,249,0.1);}
+    .lev-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px;color:var(--muted);}
+    .lev-badge{background:rgba(103,232,249,0.12);border:1px solid rgba(103,232,249,0.26);color:var(--cyan);padding:3px 10px;border-radius:6px;font-weight:700;cursor:pointer;}
+    .pct-row{display:flex;gap:6px;margin-bottom:12px;}
+    .pct-btn{flex:1;padding:5px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:0.15s;text-align:center;}
+    .pct-btn:hover{border-color:rgba(103,232,249,0.3);color:var(--cyan);}
+    .buy-btn{width:100%;padding:12px;border:0;border-radius:10px;background:linear-gradient(90deg,#059669,var(--green));color:#fff;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px;box-shadow:0 4px 18px rgba(52,211,153,0.2);}
+    .sell-btn{width:100%;padding:12px;border:0;border-radius:10px;background:linear-gradient(90deg,#b91c1c,var(--red));color:#fff;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px;box-shadow:0 4px 18px rgba(248,113,113,0.2);}
+    .avail-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px;}
+    .tp-sl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+
+    /* POSITIONS / TRADES BAR */
+    .bottom-pane{grid-column:1/3;grid-row:2;border-top:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);}
+    .pos-tabs{display:flex;gap:0;border-bottom:1px solid var(--line);flex-shrink:0;}
+    .pos-tab{padding:8px 16px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:0.15s;}
+    .pos-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+    .pos-body{flex:1;overflow-y:auto;}
+    .pos-body::-webkit-scrollbar{width:3px;}
+    .pos-table{width:100%;border-collapse:collapse;font-size:12px;}
+    .pos-table th{text-align:left;padding:6px 14px;color:var(--muted);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:0.04em;border-bottom:1px solid var(--line);}
+    .pos-table td{padding:7px 14px;border-bottom:1px solid rgba(255,255,255,0.03);}
+    .pos-table tr:hover td{background:rgba(103,232,249,0.03);}
+    .badge-long{padding:2px 8px;border-radius:4px;background:rgba(52,211,153,0.14);color:var(--green);font-weight:700;font-size:11px;}
+    .badge-short{padding:2px 8px;border-radius:4px;background:rgba(248,113,113,0.14);color:var(--red);font-weight:700;font-size:11px;}
+    .close-btn{padding:3px 10px;border-radius:6px;border:1px solid rgba(248,113,113,0.3);background:transparent;color:var(--red);font-size:11px;font-weight:700;cursor:pointer;transition:0.15s;}
+    .close-btn:hover{background:rgba(248,113,113,0.1);}
+
+    @media(max-width:1100px){
+      .trade-layout{grid-template-columns:1fr 260px 220px;}
+      .pane{display:none;}
+    }
+      /* ─── MOBILE RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-actions { gap: 6px; }
+      .nav-actions .btn { padding: 6px 10px; font-size: 12px; }
+      .hero { padding: 110px 16px 48px; }
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 0.95rem; }
+      .hero-cta { flex-direction: column; align-items: stretch; gap: 10px; }
+      .hero-cta .btn-primary, .hero-cta .btn-outline { padding: 13px 20px; font-size: 15px; }
+      .price-strip { gap: 10px; }
+      .price-card { min-width: 140px; padding: 12px 16px; }
+      .stats-band { flex-direction: column; }
+      .stat-item { max-width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
+      .markets-section { padding: 24px 14px; }
+      .market-table-head { flex-direction: column; gap: 10px; align-items: flex-start; }
+      .market-tabs { flex-wrap: wrap; }
+      table { font-size: 12px; }
+      th, td { padding: 8px 8px; }
+      .features-grid { grid-template-columns: 1fr; gap: 14px; }
+      .trade-preview { grid-template-columns: 1fr; gap: 24px; }
+      .fees-grid { grid-template-columns: 1fr; gap: 14px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      section { padding: 48px 16px; }
+      .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .kpi .val { font-size: 1.2rem; }
+      .grid-2, .grid-3, .grid-2b, .two-col, .three-col { grid-template-columns: 1fr !important; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .miner-item { flex-wrap: wrap; }
+      .wc-row { flex-direction: column; }
+      .wc-actions { flex-wrap: wrap; }
+      .wbtn { flex: 1; min-width: 100px; }
+      .withdraw-card { padding: 16px; }
+      .page { padding: 20px 14px 60px; }
+      .page-hero { padding: 40px 16px 32px; }
+      .shield-icon { font-size: 56px; }
+      .overall-bar { gap: 12px; }
+      .score-ring { width: 100px; height: 100px; }
+      .score-ring svg { width: 100px; height: 100px; }
+      .score-val { font-size: 1.2rem; }
+      .protect-card { padding: 16px; }
+      .topbar { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 52px; gap: 6px; padding-top: 6px; padding-bottom: 6px; }
+      .pair-meta { display: none; }
+      .tb-title { font-size: 0.9rem; }
+      .trade-layout { grid-template-columns: 1fr !important; grid-template-rows: auto !important; height: auto; overflow: visible; }
+      .book-pane { display: none; }
+      .form-pane { grid-column: 1; grid-row: auto; height: auto; }
+      .bottom-pane { grid-column: 1; grid-row: auto; height: 200px; }
+      .chart-pane { grid-column: 1; grid-row: auto; height: 280px; }
+      .pane { display: none; }
+      .chart-area { height: 220px; }
+      .sidebar { width: 100%; min-height: auto; position: relative; height: auto; }
+      .main { width: 100%; }
+      .app { flex-direction: column; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ai-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
+      .ai-fab { bottom: 16px; right: 16px; width: 50px; height: 50px; font-size: 22px; }
+    }
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.7rem; }
+      .nav-brand { font-size: 1.1rem; }
+      .overall-bar { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="index.html" class="brand">OBZ X</a> <a href="mining.html" style="color:var(--cyan);font-size:13px;font-weight:700;text-decoration:none;padding:6px 12px;border:1px solid rgba(103,232,249,0.24);border-radius:8px;background:rgba(103,232,249,0.08);">⛏️ Mining</a>
+  <div class="pair-select">
+    <div>
+      <div class="pair-name">BTC / USDT</div>
+      <div style="font-size:11px;color:var(--muted)" id="pairModeText">Perpetual</div>
+    </div>
+    <div style="width:1px;height:28px;background:var(--line);margin:0 8px;"></div>
+    <div class="pair-price" id="tp-price">$61,420.18</div>
+    <div class="pair-change" id="tp-chg">▲ +2.41%</div>
+  </div>
+  <div class="pair-meta">
+    <span data-i18n-meta="high">24h High <b>$62,100</b></span>
+    <span data-i18n-meta="low">24h Low <b id="tp-low">$60,780</b></span>
+    <span data-i18n-meta="vol">24h Vol <b>$2.44B</b></span>
+    <span data-i18n-meta="oi">OI <b>$1.08B</b></span>
+    <span data-i18n-meta="funding">Funding <b>0.01%</b></span>
+    <span data-i18n-meta="mark">Mark <b id="tp-mark">$61,418</b></span>
+  </div>
+  <div class="top-actions">
+    <span class="lang-label">Language</span>
+    <div class="lang-toggle" role="group" aria-label="Language settings">
+      <button class="lang-chip active" type="button" id="langTh">ภาษาไทย</button>
+      <button class="lang-chip" type="button" id="langEn">English</button>
+    </div>
+    <span style="padding:4px 8px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.28);color:var(--green);font-size:10px;font-weight:800;letter-spacing:0.05em;">BSC TESTNET</span>
+    <button class="tbtn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy OBZ</button>
+    <button class="tbtn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
+    <button class="tbtn">Transfer</button>
+    <button class="tbtn primary" onclick="window.location='index.html'">← Home</button>
+  </div>
+</div>
+
+<!-- TRADE LAYOUT -->
+<div class="trade-layout">
+
+  <!-- WATCHLIST -->
+  <div class="pane">
+    <div class="pane-head">Watchlist <span>●</span></div>
+    <div class="pane-body">
+      <div class="watch-item active"><div><div class="wi-pair">BTC/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price" id="wl-btc">61,420</div><div class="wi-chg up">+2.41%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair">ETH/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">3,214.72</div><div class="wi-chg dn">-0.52%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair">OBZ/USDT</div><div style="font-size:10px;color:var(--muted)">Spot</div></div><div style="text-align:right"><div class="wi-price" id="wl-obz">4.218</div><div class="wi-chg up">+12.40%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair">SOL/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">142.80</div><div class="wi-chg up">+3.14%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair">BNB/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">408.20</div><div class="wi-chg dn">-1.02%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair">XRP/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">0.5822</div><div class="wi-chg up">+0.88%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair">DOGE/USDT</div><div style="font-size:10px;color:var(--muted)">Spot</div></div><div style="text-align:right"><div class="wi-price">0.1248</div><div class="wi-chg up">+5.30%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair">AVAX/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">36.44</div><div class="wi-chg dn">-0.78%</div></div></div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-pane">
+    <div class="chart-toolbar">
+      <button class="ct-btn">1m</button>
+      <button class="ct-btn">5m</button>
+      <button class="ct-btn">15m</button>
+      <button class="ct-btn active">1H</button>
+      <button class="ct-btn">4H</button>
+      <button class="ct-btn">1D</button>
+      <div class="ct-sep"></div>
+      <button class="ct-btn active">Candles</button>
+      <button class="ct-btn">Line</button>
+      <div class="ct-sep"></div>
+      <button class="ct-btn active" style="color:var(--purple)">VWAP</button>
+      <button class="ct-btn active" style="color:var(--orange)">Vol</button>
+      <button class="ct-btn">MA20</button>
+      <button class="ct-btn">BB</button>
+      <button class="ct-btn">RSI</button>
+    </div>
+    <div class="chart-area">
+      <svg viewBox="0 0 900 420" preserveAspectRatio="none" id="mainSvg">
+        <defs>
+          <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(103,232,249,0.22)"/>
+            <stop offset="100%" stop-color="rgba(103,232,249,0)"/>
+          </linearGradient>
+        </defs>
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="0" y1="60" x2="900" y2="60"/>
+          <line x1="0" y1="120" x2="900" y2="120"/>
+          <line x1="0" y1="180" x2="900" y2="180"/>
+          <line x1="0" y1="240" x2="900" y2="240"/>
+          <line x1="0" y1="300" x2="900" y2="300"/>
+          <line x1="0" y1="360" x2="900" y2="360"/>
+        </g>
+        <!-- price labels -->
+        <g fill="rgba(139,170,196,0.7)" font-size="10" font-family="monospace">
+          <text x="860" y="64" text-anchor="end" id="pl-5">62,100</text>
+          <text x="860" y="124" text-anchor="end" id="pl-4">61,800</text>
+          <text x="860" y="184" text-anchor="end" id="pl-3">61,500</text>
+          <text x="860" y="244" text-anchor="end" id="pl-2">61,200</text>
+          <text x="860" y="304" text-anchor="end" id="pl-1">60,900</text>
+          <text x="860" y="364" text-anchor="end" id="pl-0">60,600</text>
+        </g>
+        <path id="cFill" d="" fill="url(#fillGrad)"/>
+        <path id="cLine" d="" fill="none" stroke="#67e8f9" stroke-width="2"/>
+        <path id="vwapPath" d="" fill="none" stroke="rgba(168,85,247,0.7)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <g id="candleGroup"></g>
+        <g id="volGroup"></g>
+        <!-- current price line -->
+        <line id="priceLineH" x1="0" y1="200" x2="880" y2="200" stroke="rgba(103,232,249,0.35)" stroke-width="1" stroke-dasharray="4 3"/>
+        <rect id="priceLabelBg" x="856" y="193" width="54" height="16" rx="4" fill="rgba(103,232,249,0.2)"/>
+        <text id="priceLabel" x="883" y="204" text-anchor="middle" fill="#67e8f9" font-size="10" font-weight="bold" font-family="monospace">61,420</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ORDER BOOK -->
+  <div class="book-pane">
+    <div class="book-tabs">
+        <button class="book-tab active" data-i18n-book="book">Book</button>
+        <button class="book-tab" data-i18n-book="trades">Trades</button>
+        <button class="book-tab" data-i18n-book="info">Info</button>
+    </div>
+      <div class="book-hdr"><span data-i18n="bookPrice">Price</span><span data-i18n="bookSize">Size</span><span data-i18n="bookTotal">Total</span></div>
+    <div class="book-body" id="bookBody">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- ORDER FORM -->
+  <div class="form-pane">
+    <div class="form-tabs">
+      <div class="form-tab buy active" id="fBuy">Buy / Long</div>
+      <div class="form-tab sell" id="fSell">Sell / Short</div>
+    </div>
+    <div class="form-body">
+      <div class="order-types">
+        <button class="ot-btn active" data-i18n-order="limit">Limit</button>
+        <button class="ot-btn" data-i18n-order="market">Market</button>
+        <button class="ot-btn" data-i18n-order="stop">Stop</button>
+      </div>
+      <div class="avail-row"><span data-i18n="available">Available</span><span style="color:var(--text)">$12,450.00 USDT</span></div>
+      <div class="lev-row"><span data-i18n="leverage">Leverage</span><span class="lev-badge" id="levBadge">10×</span></div>
+      <div class="f-row">
+        <div class="f-lbl" data-i18n="priceLbl">Price (USDT)</div>
+        <input class="f-input" id="fPrice" value="61420.18"/>
+      </div>
+      <div class="f-row">
+        <div class="f-lbl" data-i18n="amountLbl">Amount (BTC)</div>
+        <input class="f-input" id="fAmount" value="0.100"/>
+      </div>
+      <div class="pct-row">
+        <button class="pct-btn" data-i18n-pct="25">25%</button>
+        <button class="pct-btn" data-i18n-pct="50">50%</button>
+        <button class="pct-btn" data-i18n-pct="75">75%</button>
+        <button class="pct-btn" data-i18n-pct="max">Max</button>
+      </div>
+      <div class="tp-sl">
+        <div class="f-row" style="margin:0">
+          <div class="f-lbl" data-i18n="takeProfit">Take Profit</div>
+          <input class="f-input" value="62,100"/>
+        </div>
+        <div class="f-row" style="margin:0">
+          <div class="f-lbl" data-i18n="stopLoss">Stop Loss</div>
+          <input class="f-input" value="60,800"/>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:14px;">
+        <span data-i18n="orderValue">Order Value</span><span style="color:var(--text)">$61,420.18</span>
+      </div>
+      <div id="submitArea">
+        <button class="buy-btn" id="submitBuy">Buy / Long BTC</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSITIONS BAR -->
+  <div class="bottom-pane">
+    <div class="pos-tabs">
+      <div class="pos-tab active" data-i18n-pos="positions">Positions (1)</div>
+      <div class="pos-tab" data-i18n-pos="openOrders">Open Orders (0)</div>
+      <div class="pos-tab" data-i18n-pos="orderHistory">Order History</div>
+      <div class="pos-tab" data-i18n-pos="tradeHistory">Trade History</div>
+    </div>
+    <div class="pos-body">
+      <table class="pos-table">
+        <thead><tr>
+          <th data-i18n-head="contract">Contract</th><th data-i18n-head="size">Size</th><th data-i18n-head="entry">Entry</th><th data-i18n-head="mark">Mark</th><th data-i18n-head="liq">Liq.</th><th data-i18n-head="margin">Margin</th><th data-i18n-head="pnl">PnL (ROE)</th><th data-i18n-head="action">Action</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge-long">LONG</span> BTC/USDT Perp</td>
+            <td>0.42 BTC</td>
+            <td>$60,820.00</td>
+            <td id="pos-mark">$61,420.18</td>
+            <td>$58,200.00</td>
+            <td>$2,542.00</td>
+            <td style="color:var(--green)" id="pos-pnl">+$252.08 (+9.9%)</td>
+            <td><button class="close-btn" id="closeBtn">Close</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ── chart ── */
+  const W=900,H=420,P=28;
+  const cLine=document.getElementById('cLine');
+  const cFill=document.getElementById('cFill');
+  const vwapPath=document.getElementById('vwapPath');
+  const candleGroup=document.getElementById('candleGroup');
+  const volGroup=document.getElementById('volGroup');
+  const priceLineH=document.getElementById('priceLineH');
+  const priceLabel=document.getElementById('priceLabel');
+  const priceLabelBg=document.getElementById('priceLabelBg');
+
+  let base=61420,drift2=0;
+
+  function buildChart(){
+    const pts=Array.from({length:40},(_,i)=>base+Math.sin(i/3+drift2)*2200+(Math.random()-0.5)*800);
+    const mn=Math.min(...pts),mx=Math.max(...pts),rng=mx-mn||1;
+    const step=(W-P*2)/(pts.length-1);
+
+    const coords=pts.map((v,i)=>{
+      const x=(P+i*step).toFixed(1);
+      const y=(H-60-((v-mn)/rng)*(H-60-P)).toFixed(1);
+      return {x:parseFloat(x),y:parseFloat(y),v};
+    });
+
+    const d=coords.map((c,i)=>`${i===0?'M':'L'} ${c.x} ${c.y}`).join(' ');
+    cLine.setAttribute('d',d);
+    cFill.setAttribute('d',`${d} L ${coords[coords.length-1].x} ${H-P} L ${P} ${H-P} Z`);
+
+    const vwap=pts.reduce((a,v)=>a+v,0)/pts.length;
+    const vd=coords.map((c,i)=>{
+      const vy=(H-60-((vwap-mn)/rng)*(H-60-P)).toFixed(1);
+      return `${i===0?'M':'L'} ${c.x} ${vy}`;
+    }).join(' ');
+    vwapPath.setAttribute('d',vd);
+
+    candleGroup.innerHTML=''; volGroup.innerHTML='';
+    coords.forEach(({x,y,v},i)=>{
+      const ch=8+Math.random()*20; const up=v>=base;
+      const svg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      svg.setAttribute('x',x-6); svg.setAttribute('y',y-ch/2);
+      svg.setAttribute('width',12); svg.setAttribute('height',ch);
+      svg.setAttribute('rx',3); svg.setAttribute('fill',up?'#34d399':'#f87171');
+      svg.setAttribute('opacity','0.92');
+      svg.setAttribute('stroke',up?'rgba(52,211,153,0.3)':'rgba(248,113,113,0.3)');
+      svg.setAttribute('stroke-width','1');
+      candleGroup.appendChild(svg);
+
+      const wk=document.createElementNS('http://www.w3.org/2000/svg','line');
+      wk.setAttribute('x1',x); wk.setAttribute('x2',x);
+      wk.setAttribute('y1',y+ch/2); wk.setAttribute('y2',y+ch/2+16+Math.random()*20);
+      wk.setAttribute('stroke',up?'#34d399':'#f87171');
+      wk.setAttribute('stroke-width','2'); wk.setAttribute('opacity','0.85');
+      candleGroup.appendChild(wk);
+
+      const vr=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      const vh=6+Math.random()*28;
+      vr.setAttribute('x',x-6); vr.setAttribute('y',H-P-vh);
+      vr.setAttribute('width',12); vr.setAttribute('height',vh);
+      vr.setAttribute('rx',2); vr.setAttribute('fill',up?'rgba(52,211,153,0.38)':'rgba(248,113,113,0.38)');
+      volGroup.appendChild(vr);
+    });
+
+    const lastY=coords[coords.length-1].y;
+    priceLineH.setAttribute('y1',lastY); priceLineH.setAttribute('y2',lastY);
+    priceLabelBg.setAttribute('y',lastY-8);
+    priceLabel.setAttribute('y',lastY+4);
+    priceLabel.textContent=base.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+
+    drift2+=0.18; base+=(Math.random()-0.495)*35;
+
+    /* update labels */
+    const span=(mx-mn)/5;
+    for(let i=0;i<=5;i++){
+      const el=document.getElementById(`pl-${i}`);
+      if(el) el.textContent=(mn+span*i).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    }
+  }
+  buildChart(); setInterval(buildChart,1400);
+
+  /* ── book ── */
+  const bookBody=document.getElementById('bookBody');
+  function buildBook(){
+    let html='';
+    for(let i=0;i<10;i++){
+      const ask=(base+30+i*12+Math.random()*8).toFixed(2);
+      const size=(Math.random()*2+0.1).toFixed(3);
+      const tot=(parseFloat(ask)*parseFloat(size)).toFixed(0);
+      html+=`<div class="book-row sell"><span class="col-price">${parseFloat(ask).toLocaleString('en-US',{minimumFractionDigits:2})}</span><span>${size}</span><span>${parseInt(tot).toLocaleString()}</span></div>`;
+    }
+    html+=`<div class="spread-row" id="spreadVal">$${base.toFixed(2)} <span style="font-size:11px;color:var(--muted)">Spread 0.03</span></div>`;
+    for(let i=0;i<10;i++){
+      const bid=(base-10-i*11-Math.random()*8).toFixed(2);
+      const size=(Math.random()*2+0.1).toFixed(3);
+      const tot=(parseFloat(bid)*parseFloat(size)).toFixed(0);
+      html+=`<div class="book-row buy"><span class="col-price">${parseFloat(bid).toLocaleString('en-US',{minimumFractionDigits:2})}</span><span>${size}</span><span>${parseInt(tot).toLocaleString()}</span></div>`;
+    }
+    bookBody.innerHTML=html;
+  }
+  buildBook(); setInterval(buildBook,1200);
+
+  /* ── top bar price ── */
+  const tpPrice=document.getElementById('tp-price');
+  const wlBtc=document.getElementById('wl-btc');
+  const wlObz=document.getElementById('wl-obz');
+  const posMark=document.getElementById('pos-mark');
+  const posPnl=document.getElementById('pos-pnl');
+  const entryPrice=60820;
+
+  setInterval(()=>{
+    tpPrice.textContent='$'+base.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    wlBtc.textContent=base.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    posMark.textContent='$'+base.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+    const pnl=(base-entryPrice)*0.42;
+    const roe=(pnl/2542*100);
+    posPnl.textContent=`${pnl>=0?'+':''}$${pnl.toFixed(2)} (${roe>=0?'+':''}${roe.toFixed(1)}%)`;
+    posPnl.style.color=pnl>=0?'var(--green)':'var(--red)';
+  },1400);
+
+  /* ── form buy/sell toggle ── */
+  const fBuy=document.getElementById('fBuy');
+  const fSell=document.getElementById('fSell');
+  const submitArea=document.getElementById('submitArea');
+  fBuy.addEventListener('click',()=>{
+    fBuy.classList.add('active'); fSell.classList.remove('active');
+    submitArea.innerHTML='<button class="buy-btn">Buy / Long BTC</button>';
+  });
+  fSell.addEventListener('click',()=>{
+    fSell.classList.add('active'); fBuy.classList.remove('active');
+    submitArea.innerHTML='<button class="sell-btn">Sell / Short BTC</button>';
+  });
+
+  /* ── chart toolbar tabs ── */
+  document.querySelectorAll('.ct-btn').forEach(b=>{
+    b.addEventListener('click',function(){
+      const siblings=Array.from(this.parentElement.children);
+      const group=['1m','5m','15m','1H','4H','1D'];
+      if(group.includes(this.textContent)){
+        siblings.filter(s=>group.includes(s.textContent)).forEach(s=>s.classList.remove('active'));
+      }
+      this.classList.toggle('active');
+    });
+  });
+
+  /* ── pos tabs ── */
+  document.querySelectorAll('.pos-tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.pos-tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+  /* ── book tabs ── */
+  document.querySelectorAll('.book-tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.book-tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+  /* ── order type tabs ── */
+  document.querySelectorAll('.ot-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.ot-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+    });
+  });
+
+  /* ── leverage cycle ── */
+  const levs=['5×','10×','20×','50×','100×'];
+  let li=1;
+  document.getElementById('levBadge').addEventListener('click',()=>{
+    li=(li+1)%levs.length;
+    document.getElementById('levBadge').textContent=levs[li];
+  });
+</script>
+<!-- ═══════════ OBZ AI ASSISTANT WIDGET ═══════════ -->
+<style>
+  .ai-fab {
+    position: fixed; bottom: 28px; right: 28px; z-index: 8000;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: linear-gradient(135deg, #67e8f9, #a855f7);
+    border: 0; cursor: pointer;
+    box-shadow: 0 8px 32px rgba(103,232,249,0.38);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ai-fab:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(103,232,249,0.5); }
+  .ai-fab .ai-badge {
+    position: absolute; top: -3px; right: -3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #34d399; border: 2px solid #030b1a;
+    font-size: 10px; display: flex; align-items: center; justify-content: center;
+    color: #030b1a; font-weight: 900;
+  }
+  .ai-panel {
+    position: fixed; bottom: 100px; right: 28px; z-index: 8001;
+    width: 380px; max-width: 96vw;
+    background: linear-gradient(145deg, rgba(6,14,32,0.98), rgba(14,28,60,0.98));
+    border: 1px solid rgba(103,232,249,0.26);
+    border-radius: 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    display: none; flex-direction: column; overflow: hidden;
+    animation: aiSlideUp 0.22s ease;
+  }
+  .ai-panel.open { display: flex; }
+  @keyframes aiSlideUp { from { transform:translateY(16px);opacity:0; } to { transform:translateY(0);opacity:1; } }
+  .ai-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px;
+    background: linear-gradient(90deg, rgba(103,232,249,0.12), rgba(168,85,247,0.12));
+    border-bottom: 1px solid rgba(103,232,249,0.14);
+  }
+  .ai-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #67e8f9, #a855f7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .ai-header-info .ai-name { font-weight: 800; font-size: 15px; }
+  .ai-header-info .ai-status { font-size: 12px; color: #34d399; display: flex; align-items: center; gap: 5px; }
+  .ai-header-info .ai-status::before { content:'●'; font-size:8px; }
+  .ai-close-btn { margin-left: auto; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); color: #8baac4; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .ai-messages {
+    flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    max-height: 340px; min-height: 220px;
+  }
+  .ai-messages::-webkit-scrollbar { width: 3px; }
+  .ai-messages::-webkit-scrollbar-thumb { background: rgba(103,232,249,0.2); border-radius: 2px; }
+  .ai-msg { display: flex; gap: 10px; align-items: flex-end; }
+  .ai-msg.user { flex-direction: row-reverse; }
+  .ai-bubble {
+    max-width: 78%; padding: 10px 14px; border-radius: 16px;
+    font-size: 13px; line-height: 1.55;
+  }
+  .ai-msg.bot .ai-bubble { background: rgba(103,232,249,0.1); border: 1px solid rgba(103,232,249,0.18); color: #f8fafc; border-bottom-left-radius: 4px; }
+  .ai-msg.user .ai-bubble { background: linear-gradient(135deg, rgba(103,232,249,0.22), rgba(168,85,247,0.22)); border: 1px solid rgba(103,232,249,0.26); color: #f8fafc; border-bottom-right-radius: 4px; }
+  .ai-msg-icon { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg,#67e8f9,#a855f7); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .ai-msg.user .ai-msg-icon { background: rgba(255,255,255,0.1); }
+  .ai-typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; background: rgba(103,232,249,0.07); border-radius: 16px; border-bottom-left-radius: 4px; width: fit-content; }
+  .ai-typing span { width: 6px; height: 6px; border-radius: 50%; background: #67e8f9; animation: typingDot 1.2s infinite; }
+  .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:0.4;} 30%{transform:translateY(-5px);opacity:1;} }
+  .ai-quick-btns { display: flex; gap: 6px; padding: 0 16px 12px; flex-wrap: wrap; }
+  .ai-quick { padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(103,232,249,0.22); background: rgba(103,232,249,0.07); color: #67e8f9; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s; white-space: nowrap; }
+  .ai-quick:hover { background: rgba(103,232,249,0.18); }
+  .ai-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid rgba(103,232,249,0.1); }
+  .ai-input { flex: 1; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.04); color: #f8fafc; outline: none; font-size: 13px; }
+  .ai-input:focus { border-color: rgba(103,232,249,0.36); }
+  .ai-send { width: 38px; height: 38px; border-radius: 10px; border: 0; background: linear-gradient(135deg,#67e8f9,#a855f7); color: #030b1a; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; }
+  .ai-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin: 2px 2px 0 0; }
+  .ai-tag.buy { background: rgba(52,211,153,0.18); color: #34d399; }
+  .ai-tag.sell { background: rgba(248,113,113,0.18); color: #f87171; }
+  .ai-tag.info { background: rgba(103,232,249,0.12); color: #67e8f9; }
+    /* ─── MOBILE RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-actions { gap: 6px; }
+      .nav-actions .btn { padding: 6px 10px; font-size: 12px; }
+      .hero { padding: 110px 16px 48px; }
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 0.95rem; }
+      .hero-cta { flex-direction: column; align-items: stretch; gap: 10px; }
+      .hero-cta .btn-primary, .hero-cta .btn-outline { padding: 13px 20px; font-size: 15px; }
+      .price-strip { gap: 10px; }
+      .price-card { min-width: 140px; padding: 12px 16px; }
+      .stats-band { flex-direction: column; }
+      .stat-item { max-width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
+      .markets-section { padding: 24px 14px; }
+      .market-table-head { flex-direction: column; gap: 10px; align-items: flex-start; }
+      .market-tabs { flex-wrap: wrap; }
+      table { font-size: 12px; }
+      th, td { padding: 8px 8px; }
+      .features-grid { grid-template-columns: 1fr; gap: 14px; }
+      .trade-preview { grid-template-columns: 1fr; gap: 24px; }
+      .fees-grid { grid-template-columns: 1fr; gap: 14px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      section { padding: 48px 16px; }
+      .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .kpi .val { font-size: 1.2rem; }
+      .grid-2, .grid-3, .grid-2b, .two-col, .three-col { grid-template-columns: 1fr !important; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .miner-item { flex-wrap: wrap; }
+      .wc-row { flex-direction: column; }
+      .wc-actions { flex-wrap: wrap; }
+      .wbtn { flex: 1; min-width: 100px; }
+      .withdraw-card { padding: 16px; }
+      .page { padding: 20px 14px 60px; }
+      .page-hero { padding: 40px 16px 32px; }
+      .shield-icon { font-size: 56px; }
+      .overall-bar { gap: 12px; }
+      .score-ring { width: 100px; height: 100px; }
+      .score-ring svg { width: 100px; height: 100px; }
+      .score-val { font-size: 1.2rem; }
+      .protect-card { padding: 16px; }
+      .topbar { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 52px; gap: 6px; padding-top: 6px; padding-bottom: 6px; }
+      .pair-meta { display: none; }
+      .tb-title { font-size: 0.9rem; }
+      .trade-layout { grid-template-columns: 1fr !important; grid-template-rows: auto !important; height: auto; overflow: visible; }
+      .book-pane { display: none; }
+      .form-pane { grid-column: 1; grid-row: auto; height: auto; }
+      .bottom-pane { grid-column: 1; grid-row: auto; height: 200px; }
+      .chart-pane { grid-column: 1; grid-row: auto; height: 280px; }
+      .pane { display: none; }
+      .chart-area { height: 220px; }
+      .sidebar { width: 100%; min-height: auto; position: relative; height: auto; }
+      .main { width: 100%; }
+      .app { flex-direction: column; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ai-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
+      .ai-fab { bottom: 16px; right: 16px; width: 50px; height: 50px; font-size: 22px; }
+    }
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.7rem; }
+      .nav-brand { font-size: 1.1rem; }
+      .overall-bar { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+
+<!-- FAB Button -->
+<button class="ai-fab" id="aiFab" title="OBZ AI Assistant">
+  🤖
+  <div class="ai-badge">AI</div>
+</button>
+
+<!-- AI Panel -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-header">
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-header-info">
+      <div class="ai-name" id="aiName">OBZ AI Assistant</div>
+      <div class="ai-status" id="aiStatus">Online · Real-time market analysis</div>
+    </div>
+    <button class="ai-close-btn" id="aiClose">✕</button>
+  </div>
+  <div class="ai-messages" id="aiMessages"></div>
+  <div class="ai-quick-btns" id="aiQuick">
+    <button class="ai-quick" data-q="วิเคราะห์ BTC ตอนนี้" data-i18n-quick="btc">📊 วิเคราะห์ BTC</button>
+    <button class="ai-quick" data-q="ค่าธรรมเนียมเท่าไหร่" data-i18n-quick="fee">💰 ค่าธรรมเนียม</button>
+    <button class="ai-quick" data-q="วิธี Connect Wallet" data-i18n-quick="wallet">🔗 Connect Wallet</button>
+    <button class="ai-quick" data-q="แนะนำ coin น่าลงทุน" data-i18n-quick="coin">🚀 แนะนำ coin</button>
+  </div>
+  <div class="ai-input-row">
+    <input class="ai-input" id="aiInput" placeholder="พิมพ์คำถาม…" />
+    <button class="ai-send" id="aiSendBtn">➤</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const i18n = {
+    th: {
+      pairModeText: 'สัญญาถาวร',
+      pairMeta: {
+        high: '24h สูงสุด',
+        low: '24h ต่ำสุด',
+        vol: '24h ปริมาณ',
+        oi: 'OI',
+        funding: 'Funding',
+        mark: 'ราคา Mark'
+      },
+      bookPrice: 'ราคา',
+      bookSize: 'ขนาด',
+      bookTotal: 'รวม',
+      bookTabs: { book: 'สมุดคำสั่ง', trades: 'ดีล', info: 'ข้อมูล' },
+      orderTypes: { limit: 'ลิมิต', market: 'ตลาด', stop: 'สต็อป' },
+      available: 'คงเหลือ',
+      leverage: 'เลเวอเรจ',
+      priceLbl: 'ราคา (USDT)',
+      amountLbl: 'จำนวน (BTC)',
+      pct25: '25%',
+      pct50: '50%',
+      pct75: '75%',
+      pctMax: 'สูงสุด',
+      takeProfit: 'ทำกำไร',
+      stopLoss: 'ตัดขาดทุน',
+      orderValue: 'มูลค่าคำสั่ง',
+      buy: 'ซื้อ / Long BTC',
+      sell: 'ขาย / Short BTC',
+      positions: 'สถานะ (1)',
+      openOrders: 'คำสั่งค้าง (0)',
+      orderHistory: 'ประวัติคำสั่ง',
+      tradeHistory: 'ประวัติการเทรด',
+      contract: 'สัญญา',
+      size: 'ขนาด',
+      entry: 'ราคาเข้า',
+      mark: 'ราคา Mark',
+      liq: 'ล้างพอร์ต',
+      margin: 'มาร์จิน',
+      pnl: 'กำไร/ขาดทุน (ROE)',
+      action: 'การจัดการ',
+      close: 'ปิดสถานะ',
+      aiName: 'ผู้ช่วย OBZ AI',
+      aiStatus: 'ออนไลน์ · วิเคราะห์ตลาดแบบเรียลไทม์',
+      aiPlace: 'พิมพ์คำถาม…',
+      quick: { btc: '📊 วิเคราะห์ BTC', fee: '💰 ค่าธรรมเนียม', wallet: '🔗 เชื่อม Wallet', coin: '🚀 แนะนำเหรียญ' }
+    },
+    en: {
+      pairModeText: 'Perpetual',
+      pairMeta: {
+        high: '24h High',
+        low: '24h Low',
+        vol: '24h Vol',
+        oi: 'OI',
+        funding: 'Funding',
+        mark: 'Mark'
+      },
+      bookPrice: 'Price',
+      bookSize: 'Size',
+      bookTotal: 'Total',
+      bookTabs: { book: 'Book', trades: 'Trades', info: 'Info' },
+      orderTypes: { limit: 'Limit', market: 'Market', stop: 'Stop' },
+      available: 'Available',
+      leverage: 'Leverage',
+      priceLbl: 'Price (USDT)',
+      amountLbl: 'Amount (BTC)',
+      pct25: '25%',
+      pct50: '50%',
+      pct75: '75%',
+      pctMax: 'Max',
+      takeProfit: 'Take Profit',
+      stopLoss: 'Stop Loss',
+      orderValue: 'Order Value',
+      buy: 'Buy / Long BTC',
+      sell: 'Sell / Short BTC',
+      positions: 'Positions (1)',
+      openOrders: 'Open Orders (0)',
+      orderHistory: 'Order History',
+      tradeHistory: 'Trade History',
+      contract: 'Contract',
+      size: 'Size',
+      entry: 'Entry',
+      mark: 'Mark',
+      liq: 'Liq.',
+      margin: 'Margin',
+      pnl: 'PnL (ROE)',
+      action: 'Action',
+      close: 'Close',
+      aiName: 'OBZ AI Assistant',
+      aiStatus: 'Online · Real-time market analysis',
+      aiPlace: 'Type your question…',
+      quick: { btc: '📊 BTC Analysis', fee: '💰 Fees', wallet: '🔗 Connect Wallet', coin: '🚀 Coin Picks' }
+    }
+  };
+
+  const langTh = document.getElementById('langTh');
+  const langEn = document.getElementById('langEn');
+  const setText = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
+  const applyLang = (lang) => {
+    const pack = i18n[lang] || i18n.en;
+    setText('#pairModeText', pack.pairModeText);
+    document.querySelectorAll('[data-i18n-meta]').forEach(el => {
+      el.innerHTML = `${pack.pairMeta[el.dataset.i18nMeta]} <b>${el.querySelector('b')?.textContent || ''}</b>`;
+    });
+    setText('[data-i18n="bookPrice"]', pack.bookPrice);
+    setText('[data-i18n="bookSize"]', pack.bookSize);
+    setText('[data-i18n="bookTotal"]', pack.bookTotal);
+    document.querySelectorAll('[data-i18n-book]').forEach(el => el.textContent = pack.bookTabs[el.dataset.i18nBook]);
+    document.querySelectorAll('[data-i18n-order]').forEach(el => el.textContent = pack.orderTypes[el.dataset.i18nOrder]);
+    setText('[data-i18n="available"]', pack.available);
+    setText('[data-i18n="leverage"]', pack.leverage);
+    setText('[data-i18n="priceLbl"]', pack.priceLbl);
+    setText('[data-i18n="amountLbl"]', pack.amountLbl);
+    document.querySelectorAll('[data-i18n-pct]').forEach(el => el.textContent = pack[`pct${el.dataset.i18nPct === 'max' ? 'Max' : el.dataset.i18nPct}`]);
+    setText('[data-i18n="takeProfit"]', pack.takeProfit);
+    setText('[data-i18n="stopLoss"]', pack.stopLoss);
+    setText('[data-i18n="orderValue"]', pack.orderValue);
+    setText('#submitBuy', pack.buy);
+    setText('#fSell', pack.sell);
+    document.querySelectorAll('[data-i18n-pos]').forEach(el => el.textContent = pack[el.dataset.i18nPos]);
+    document.querySelectorAll('[data-i18n-head]').forEach(el => el.textContent = pack[el.dataset.i18nHead]);
+    setText('#closeBtn', pack.close);
+    setText('#aiName', pack.aiName);
+    setText('#aiStatus', pack.aiStatus);
+    const aiInput = document.getElementById('aiInput');
+    if (aiInput) aiInput.placeholder = pack.aiPlace;
+    document.querySelectorAll('.ai-quick').forEach(el => {
+      const key = el.dataset.i18nQuick;
+      if (key && pack.quick[key]) el.textContent = pack.quick[key];
+    });
+    if (langTh && langEn) {
+      langTh.classList.toggle('active', lang === 'th');
+      langEn.classList.toggle('active', lang !== 'th');
+    }
+  };
+
+  if (langTh && langEn) {
+    langTh.addEventListener('click', () => applyLang('th'));
+    langEn.addEventListener('click', () => applyLang('en'));
+    applyLang('th');
+  }
+})();
+</script>
+
+<script>
+(function(){
+  const fab = document.getElementById('aiFab');
+  const panel = document.getElementById('aiPanel');
+  const closeBtn = document.getElementById('aiClose');
+  const msgs = document.getElementById('aiMessages');
+  const input = document.getElementById('aiInput');
+  const sendBtn = document.getElementById('aiSendBtn');
+  const quickBtns = document.querySelectorAll('.ai-quick');
+
+  const responses = {
+    'btc': () => `<b>🔍 BTC/USDT Analysis</b><br><br><span class="ai-tag buy">LONG BIAS</span><span class="ai-tag info">HIGH CONFIDENCE</span><br><br>ราคาปัจจุบัน <b style="color:#67e8f9">${(61000+Math.random()*1000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',')}</b><br><br>📈 <b>Momentum:</b> Strong Buy<br>📊 <b>RSI:</b> 68.4 — ใกล้ overbought<br>💎 <b>VWAP:</b> ราคาเหนือ VWAP บวก<br>🎯 <b>Target:</b> $62,400 — $63,200<br>🛡️ <b>Stop Loss:</b> $60,200<br><br><i style="color:#8baac4;font-size:12px;">⚠️ ไม่ใช่คำแนะนำการลงทุน</i>`,
+    'ค่าธรรมเนียม|fee|fees': () => `<b>💰 OBZ Fee Structure</b><br><br><span class="ai-tag buy">Maker 0.02%</span> <span class="ai-tag sell">Taker 0.04%</span><br><br>🥇 <b>Starter:</b> 0.10% / 0.08%<br>💎 <b>Pro (hold 500 OBZ):</b> 0.04% / 0.02%<br>🏢 <b>Institutional:</b> 0.01% / 0.00%<br><br>ถือ OBZ token ลดค่าธรรมเนียมได้ถึง <b style="color:#34d399">60%</b>`,
+    'wallet|connect': () => `<b>🔗 วิธี Connect Wallet</b><br><br>1️⃣ กดปุ่ม <b>"🔗 Wallet"</b> ที่ navbar<br>2️⃣ เลือก wallet ที่ต้องการ:<br>&nbsp;&nbsp;• 🦊 <b>MetaMask</b> — browser extension<br>&nbsp;&nbsp;• 🔵 <b>WalletConnect</b> — scan QR<br>&nbsp;&nbsp;• 👻 <b>Phantom</b> — Solana wallet<br>3️⃣ กด Approve ในแอป wallet<br>4️⃣ ✅ เชื่อมต่อสำเร็จ!<br><br>รองรับ EVM, Solana, Cosmos`,
+    'coin|แนะนำ|ลงทุน|invest': () => `<b>🚀 Top Picks — Week of Aug 2026</b><br><br><span class="ai-tag buy">HIGH POTENTIAL</span><br><br>1. <b>OBZ</b> +12.4% — native token momentum<br>2. <b>SOL</b> +3.1% — ecosystem growth<br>3. <b>BTC</b> +2.4% — institutional buying<br><br><span class="ai-tag sell">CAUTION</span><br>4. <b>BNB</b> -1.0% — regulatory news<br><br><i style="color:#8baac4;font-size:12px;">⚠️ DYOR — ไม่ใช่คำแนะนำการลงทุน</i>`,
+    'obz': () => `<b>💎 OBZ Token</b><br><br>ราคา: <b style="color:#67e8f9">$4.218</b> <span class="ai-tag buy">+12.4%</span><br><br>🔥 <b>ประโยชน์ของ OBZ:</b><br>• ลดค่าธรรมเนียม 60%<br>• รับ Mining Rewards<br>• Governance voting<br>• Staking APY ~18%<br><br>Market Cap: <b>$4.2B</b> | Rank: #42`,
+    'สมัคร|register|account|เปิดบัญชี': () => `<b>✅ สมัครสมาชิก OBZ</b><br><br>1. กดปุ่ม <b>"Get Started"</b> ด้านบน<br>2. กรอก Email + Password<br>3. Verify email<br>4. เริ่มเทรดได้ทันที!<br><br>⚡ ฟรี — ไม่มีค่าใช้จ่าย<br>🎁 รับ OBZ token <b>5 OBZ</b> ฟรีเมื่อสมัคร`,
+    'default': (q) => `<b>🤖 AI Analysis</b><br><br>ผมได้รับคำถามเกี่ยวกับ "<b>${q}</b>"<br><br>สิ่งที่ผมช่วยได้:<br>• 📊 วิเคราะห์ราคา BTC, ETH, OBZ<br>• 💰 ข้อมูลค่าธรรมเนียม<br>• 🔗 วิธี connect wallet<br>• 🚀 แนะนำ coin น่าสนใจ<br>• 📖 วิธีใช้ platform<br><br>ลองถามใหม่อีกครั้งนะครับ 😊`
+  };
+
+  function getReply(q) {
+    const lq = q.toLowerCase();
+    for (const [key, fn] of Object.entries(responses)) {
+      if (key === 'default') continue;
+      if (key.split('|').some(k => lq.includes(k))) return fn(q);
+    }
+    return responses.default(q);
+  }
+
+  function addMsg(html, type) {
+    const row = document.createElement('div');
+    row.className = `ai-msg ${type}`;
+    const icon = document.createElement('div');
+    icon.className = 'ai-msg-icon';
+    icon.textContent = type === 'bot' ? '🤖' : '👤';
+    const bubble = document.createElement('div');
+    bubble.className = 'ai-bubble';
+    bubble.innerHTML = html;
+    row.appendChild(icon);
+    row.appendChild(bubble);
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function showTyping() {
+    const row = document.createElement('div');
+    row.className = 'ai-msg bot'; row.id = 'aiTypingRow';
+    const icon = document.createElement('div'); icon.className='ai-msg-icon'; icon.textContent='🤖';
+    const t = document.createElement('div'); t.className='ai-typing';
+    t.innerHTML='<span></span><span></span><span></span>';
+    row.appendChild(icon); row.appendChild(t);
+    msgs.appendChild(row); msgs.scrollTop=msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const r = document.getElementById('aiTypingRow'); if(r) r.remove();
+  }
+
+  function send(q) {
+    if (!q.trim()) return;
+    addMsg(q, 'user');
+    input.value = '';
+    showTyping();
+    const delay = 900 + Math.random() * 600;
+    setTimeout(() => { removeTyping(); addMsg(getReply(q), 'bot'); }, delay);
+  }
+
+  fab.addEventListener('click', () => {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open') && msgs.children.length === 0) {
+      setTimeout(() => addMsg(`สวัสดีครับ! 👋 ผม <b>OBZ AI</b> ผู้ช่วยด้านการเทรดของคุณ<br><br>ผมช่วยวิเคราะห์ตลาด, แนะนำ coin, และตอบทุกคำถามเกี่ยวกับ OBZ Exchange ได้ครับ 🚀`, 'bot'), 200);
+    }
+  });
+  closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+  sendBtn.addEventListener('click', () => send(input.value));
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') send(input.value); });
+  quickBtns.forEach(b => b.addEventListener('click', () => { panel.classList.add('open'); send(b.dataset.q); }));
+})();
+</script>
+<!-- ═══════════ END OBZ AI ASSISTANT WIDGET ═══════════ -->
+</body>
+</html>
+
+
+
