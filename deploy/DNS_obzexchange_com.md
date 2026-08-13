@@ -5,15 +5,15 @@ Use these records at your registrar DNS panel (or Cloudflare DNS if you delegate
 ## Required records
 
 1. Root website
-- Type: A
+- Type: A (create all four records)
 - Name/Host: @
-- Value: <YOUR_FRONTEND_HOST_IP_OR_PROVIDER_TARGET>
+- Values: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
 - TTL: 300
 
 2. WWW alias
 - Type: CNAME
 - Name/Host: www
-- Value: obzexchange.com
+- Value: `obitza2565.github.io`
 - TTL: 300
 
 3. API endpoint
