@@ -60,6 +60,8 @@
     .watch-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background 0.15s;}
     .watch-item:hover,.watch-item.active{background:rgba(103,232,249,0.06);}
     .wi-pair{font-weight:700;font-size:13px;}
+    .wi-pair.token-pair{display:flex;align-items:center;gap:6px;}
+    .wi-token-icon{width:22px;height:22px;object-fit:contain;flex:0 0 22px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.45));}
     .wi-price{font-size:13px;font-weight:700;color:var(--cyan);}
     .wi-chg{font-size:11px;font-weight:700;}
     .wi-chg.up{color:var(--green);}
@@ -252,7 +254,7 @@
     <div class="pane-body">
       <div class="watch-item active"><div><div class="wi-pair">BTC/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price" id="wl-btc">61,420</div><div class="wi-chg up">+2.41%</div></div></div>
       <div class="watch-item"><div><div class="wi-pair">ETH/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">3,214.72</div><div class="wi-chg dn">-0.52%</div></div></div>
-      <div class="watch-item"><div><div class="wi-pair">OBZ/USDT</div><div style="font-size:10px;color:var(--muted)">Spot</div></div><div style="text-align:right"><div class="wi-price" id="wl-obz">4.218</div><div class="wi-chg up">+12.40%</div></div></div>
+      <div class="watch-item"><div><div class="wi-pair token-pair"><img src="obz-gold.svg" alt="OBZ gold token" class="wi-token-icon"/>OBZ/USDT</div><div style="font-size:10px;color:var(--muted)">Spot · OBZ Token</div></div><div style="text-align:right"><div class="wi-price" id="wl-obz">4.218</div><div class="wi-chg up">+12.40%</div></div></div>
       <div class="watch-item"><div><div class="wi-pair">SOL/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">142.80</div><div class="wi-chg up">+3.14%</div></div></div>
       <div class="watch-item"><div><div class="wi-pair">BNB/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">408.20</div><div class="wi-chg dn">-1.02%</div></div></div>
       <div class="watch-item"><div><div class="wi-pair">XRP/USDT</div><div style="font-size:10px;color:var(--muted)">Perp</div></div><div style="text-align:right"><div class="wi-price">0.5822</div><div class="wi-chg up">+0.88%</div></div></div>
