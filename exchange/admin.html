@@ -271,7 +271,7 @@
         </select>
       </div>
       <button class="tb-btn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy Contract</button>
-      <button class="tb-btn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
+      <button class="tb-btn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18,image:'https://obzexchange.com/obz-gold.svg'}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
       <button class="tb-btn" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>
       <div class="tb-pill" id="serverTime">Loading...</div>
       <div class="tb-pill">🟢 All Systems OK</div>

@@ -237,7 +237,7 @@
     </div>
     <span style="padding:4px 8px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.28);color:var(--green);font-size:10px;font-weight:800;letter-spacing:0.05em;">BSC TESTNET</span>
     <button class="tbtn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy OBZ</button>
-    <button class="tbtn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
+    <button class="tbtn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18,image:'https://obzexchange.com/obz-gold.svg'}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
     <button class="tbtn">Transfer</button>
     <button class="tbtn primary" onclick="window.location='index.html'">← Home</button>
   </div>

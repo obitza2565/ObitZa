@@ -198,7 +198,7 @@
   <div class="nav-actions">
     <div style="padding:6px 10px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.28);color:var(--green);font-size:11px;font-weight:800;letter-spacing:0.05em;">BSC TESTNET</div>
     <button class="btn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy Contract</button>
-    <button class="btn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
+    <button class="btn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18,image:'https://obzexchange.com/obz-gold.svg'}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
     <a class="btn" href="index.html">← Home</a>
     <a class="btn primary" href="trade.html">Trade Now</a>
   </div>
@@ -356,7 +356,7 @@
         </thead>
         <tbody>
           <tr>
-            <td><div class="coin-cell"><div class="coin-icon" style="font-size:14px;background:rgba(52,211,153,0.12)">OBZ</div><div><div style="font-weight:700">OBZ Token</div><div style="font-size:11px;color:var(--muted)">Native · OBZ-Pool · <a href='https://testnet.bscscan.com/token/0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7' target='_blank' style='color:var(--green);text-decoration:none;font-size:10px;'>BSC Testnet ✓</a></div></div></div></td>
+            <td><div class="coin-cell"><img src="obz-gold.svg" alt="OBZ gold token" class="coin-icon" style="object-fit:cover;padding:0;border:0;background:transparent;width:32px;height:32px;"/><div><div style="font-weight:700">OBZ Token</div><div style="font-size:11px;color:var(--muted)">Native · OBZ-Pool · <a href='https://testnet.bscscan.com/token/0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7' target='_blank' style='color:var(--green);text-decoration:none;font-size:10px;'>BSC Testnet ✓</a></div></div></div></td>
             <td style="font-weight:700" id="obzAmount">4.8241</td>
             <td style="color:var(--cyan)" id="obzUSD">$20.36</td>
             <td style="color:var(--green)" id="obzToday">+0.0842</td>

@@ -585,7 +585,7 @@
     <button class="btn-outline" id="openLogin">Log In</button>
     <button class="btn-primary" id="openRegister">Get Started</button>
     <button class="btn-outline" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy Contract</button>
-    <button class="btn-outline" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
+    <button class="btn-outline" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18,image:'https://obzexchange.com/obz-gold.svg'}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
     <button class="btn-outline" id="openWalletBtn" style="padding:7px 14px;font-size:13px;">🔗 Wallet</button>
     <div class="connected-pill" id="connectedPill"><span>●</span><span id="connAddr">Not connected</span><span id="connObz" style="opacity:0.9;">OBZ: --</span></div>
   </div>
