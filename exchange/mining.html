@@ -485,6 +485,37 @@
     refreshTimer: null,
   };
 
+  // Public dApp identifier (not a secret) — get a free one at https://cloud.walletconnect.com
+  const WALLETCONNECT_PROJECT_ID = (window.OBZ_CONFIG && window.OBZ_CONFIG.walletConnectProjectId) || '';
+  let wcProviderPromise = null;
+
+  // Lazily loads WalletConnect v2 so users without a browser wallet extension
+  // (e.g. Trust Wallet on mobile) can connect via QR code / deep link.
+  async function getWalletConnectProvider(){
+    if(!WALLETCONNECT_PROJECT_ID){
+      throw new Error('WalletConnect ยังไม่ได้ตั้งค่า Project ID (window.OBZ_CONFIG.walletConnectProjectId)');
+    }
+    if(!wcProviderPromise){
+      wcProviderPromise = (async () => {
+        const { EthereumProvider } = await import('https://esm.sh/@walletconnect/ethereum-provider@2.17.0?bundle');
+        return EthereumProvider.init({
+          projectId: WALLETCONNECT_PROJECT_ID,
+          chains: [97],
+          optionalChains: [56],
+          showQrModal: true,
+          methods: ['eth_sendTransaction', 'personal_sign', 'eth_sign', 'eth_signTypedData'],
+          metadata: {
+            name: 'OBZ Exchange',
+            description: 'OBZ Mining',
+            url: 'https://obzexchange.com',
+            icons: ['https://obzexchange.com/obz-gold.svg'],
+          },
+        });
+      })();
+    }
+    return wcProviderPromise;
+  }
+
   function byId(id){ return document.getElementById(id); }
   function fmtUsd(v){ return '$' + Number(v || 0).toFixed(2); }
   function fmtDate(ts){
@@ -843,11 +874,17 @@
 
   byId('connectWalletBtn').addEventListener('click', async () => {
     try {
-      if(!window.ethereum){ throw new Error('ไม่พบกระเป๋า MetaMask'); }
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      let provider = window.ethereum;
+      let source = 'Browser Wallet';
+      if(!provider){
+        byId('mineHint').textContent = 'ไม่พบส่วนขยายกระเป๋าเงิน กำลังเปิด WalletConnect เพื่อเชื่อม Trust Wallet ผ่านมือถือ...';
+        provider = await getWalletConnectProvider();
+        source = 'Trust Wallet (WalletConnect)';
+      }
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
       if(!accounts || !accounts[0]){ throw new Error('เชื่อมกระเป๋าไม่สำเร็จ'); }
       byId('mineWallet').value = accounts[0];
-      byId('mineHint').textContent = 'เชื่อมกระเป๋าสำเร็จ: ' + accounts[0];
+      byId('mineHint').textContent = `เชื่อมกระเป๋าสำเร็จผ่าน ${source}: ` + accounts[0];
     } catch (err) {
       byId('mineHint').textContent = err.message;
     }
