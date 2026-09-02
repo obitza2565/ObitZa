@@ -872,7 +872,7 @@
     }
   }
 
-  byId('connectWalletBtn').addEventListener('click', async () => {
+  async function connectWallet(){
     try {
       let provider = window.ethereum;
       let source = 'Browser Wallet';
@@ -885,15 +885,24 @@
       if(!accounts || !accounts[0]){ throw new Error('เชื่อมกระเป๋าไม่สำเร็จ'); }
       byId('mineWallet').value = accounts[0];
       byId('mineHint').textContent = `เชื่อมกระเป๋าสำเร็จผ่าน ${source}: ` + accounts[0];
+      return true;
     } catch (err) {
       byId('mineHint').textContent = err.message;
+      return false;
     }
-  });
+  }
 
-  byId('startMiningBtn').addEventListener('click', () => {
+  byId('connectWalletBtn').addEventListener('click', connectWallet);
+
+  byId('startMiningBtn').addEventListener('click', async () => {
     if(miningState.running){
       stopMining();
       return;
+    }
+    // Auto-trigger the wallet connect flow instead of erroring when no address is set yet.
+    if(!byId('mineWallet').value.trim()){
+      const connected = await connectWallet();
+      if(!connected){ return; }
     }
     startMining();
   });
