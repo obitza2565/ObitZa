@@ -1,7 +1,8 @@
 window.OBZ_CONFIG = {
-  // Hardcoded to the Hetzner backend (port 8080) so the frontend never falls
-  // back to a broken/placeholder API base.
-  apiBase: 'http://157.180.30.86:8080',
+  // HTTPS reverse proxy (nginx + Let's Encrypt) in front of the Hetzner backend.
+  // Must stay https:// — the site is served over HTTPS and browsers block
+  // mixed-content requests to a plain http:// API.
+  apiBase: 'https://api.obzexchange.com',
 
   // WalletConnect v2 project ID (public identifier, NOT a secret — safe to
   // commit). Create a free one at https://cloud.walletconnect.com and paste
