@@ -1,5 +1,7 @@
 # Runtime data and secrets
 .env
+.env.production
+.env.local
 obz_miner.db
 obz_miner.db-*
 
@@ -13,8 +15,20 @@ __pycache__/
 # Local logs
 *.log
 
+# Temp / helper files (not for production repo)
+RUN_VMINING.ps1
+test_telegram.ps1
+netlify_*.txt
+*.zip
+build_result.txt
+
 # Token project dependencies and build output
 token/node_modules/
 token/artifacts/
 token/cache/
 token/typechain-types/
+
+# Virtual mining service dependencies and build output
+virtual-mining/node_modules/
+virtual-mining/dist/
+virtual-mining/logs/

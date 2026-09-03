@@ -16,8 +16,18 @@ POOL_OWNER_WALLET = "DfXgNqTaWKKna2iwKtj5o6QcMMjhcJhGAowbhKyfqZZY"
 app = FastAPI(title="OBZ Commercial Mining Engine")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "https://obzexchange.com",
+        "http://obzexchange.com",
+        "https://www.obzexchange.com",
+        "http://www.obzexchange.com",
+        "http://localhost:8765",
+        "http://127.0.0.1:8765",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+    ],
+    allow_origin_regex=r"https://(?:[a-z0-9-]+\.)?netlify\.app",
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -28,7 +38,14 @@ MINING_TICK_COOLDOWN_SECONDS = 8
 ANTI_BOT_CHALLENGE_TTL_SECONDS = 120
 ANTI_BOT_POW_DIFFICULTY = 4
 AUTH_SESSION_TTL_SECONDS = 86400
-ADMIN_API_KEY = os.getenv("OBZ_ADMIN_API_KEY", "obz-admin-2026")
+# No hardcoded fallback: a static secret here would be exposed in the public repo.
+ADMIN_API_KEY = os.getenv("OBZ_ADMIN_API_KEY")
+if not ADMIN_API_KEY:
+    ADMIN_API_KEY = secrets.token_urlsafe(32)
+    print(
+        "[WARN] OBZ_ADMIN_API_KEY not set in .env — generated a temporary key for this "
+        f"process only: {ADMIN_API_KEY} (set OBZ_ADMIN_API_KEY in .env for a stable key)"
+    )
 ADMIN_SESSION_TTL_SECONDS = 900
 _last_tick_by_miner = {}
 _active_challenges = {}
@@ -109,10 +126,6 @@ def _validate_auth(miner_id: str, wallet_address: str, session_token: str, reque
         raise HTTPException(status_code=401, detail="session expired")
     if session["miner_id"] != miner_id or session["wallet_address"].lower() != wallet_address.lower():
         raise HTTPException(status_code=401, detail="session does not match miner/wallet")
-
-    current_ip = _client_ip(request)
-    if session["ip"] != current_ip:
-        raise HTTPException(status_code=401, detail="session ip mismatch")
 
     session["last_seen"] = time.time()
     _auth_sessions[session_token] = session
@@ -218,9 +231,6 @@ async def authorize_public_miner(payload: PublicAuthorizePayload, request: Reque
         raise HTTPException(status_code=400, detail="challenge expired")
     if challenge_state["wallet"] != wallet:
         raise HTTPException(status_code=400, detail="challenge wallet mismatch")
-    if challenge_state["ip"] != ip:
-        raise HTTPException(status_code=400, detail="challenge ip mismatch")
-
     nonce = payload.challenge_nonce.strip()
     pow_hash = hashlib.sha256(f"{challenge_state['challenge']}:{nonce}".encode()).hexdigest()
     if not pow_hash.startswith("0" * ANTI_BOT_POW_DIFFICULTY):

@@ -7,7 +7,7 @@ import secrets
 class OBZDatabase:
     def __init__(self, db_path="obz_miner.db"):
         self.db_path = db_path
-            self.lock = threading.RLock()
+        self.lock = threading.RLock()
         self.init_db()
 
     def connect(self):
@@ -103,7 +103,7 @@ class OBZDatabase:
             cursor = conn.cursor()
             cursor.execute("SELECT value FROM network_config WHERE key = 'difficulty'")
             res = cursor.fetchone()
-            return int(res) if res else 4
+            return int(res[0]) if res else 4
 
     def record_share_with_fee(self, miner_id, nonce, difficulty, net_reward, pool_fee):
         now = int(time.time())

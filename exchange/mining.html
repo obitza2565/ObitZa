@@ -478,6 +478,7 @@
   const miningState = {
     apiBase: '',
     minerId: localStorage.getItem(MINER_ID_KEY) || '',
+    userId: localStorage.getItem(MINER_ID_KEY) || '', // Alias for Virtual Mining API
     sessionToken: localStorage.getItem(SESSION_TOKEN_KEY) || '',
     wallet: '',
     running: false,
@@ -543,11 +544,16 @@
 
   async function apiFetch(path, options){
     const url = miningState.apiBase.replace(/\/$/, '') + path;
-    const res = await fetch(url, options);
+    let res;
+    try {
+      res = await fetch(url, options);
+    } catch (_) {
+      throw new Error('เชื่อมต่อ API ไม่ได้: ' + miningState.apiBase + ' (ตรวจสอบ URL, CORS และการเชื่อมต่ออินเทอร์เน็ต)');
+    }
     let data = {};
     try { data = await res.json(); } catch (_) { data = {}; }
     if(!res.ok){
-      const detail = data && data.detail ? data.detail : ('HTTP ' + res.status);
+      const detail = data && data.error ? data.error : ('HTTP ' + res.status);
       throw new Error(detail);
     }
     return data;
@@ -561,85 +567,48 @@
     return miningState.minerId;
   }
 
-  async function sha256Hex(text){
-    const data = new TextEncoder().encode(text);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  async function solvePowChallenge(challenge, difficulty){
-    const target = '0'.repeat(Math.max(1, Number(difficulty || 1)));
-    let nonce = 0;
-    while(true){
-      const candidate = String(nonce);
-      const digest = await sha256Hex(challenge + ':' + candidate);
-      if(digest.startsWith(target)){
-        return candidate;
-      }
-      nonce += 1;
-      if(nonce % 2500 === 0){
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      }
-    }
-  }
-
-  async function registerMiner(){
+  async function startMiningApi(){
     const wallet = byId('mineWallet').value.trim();
     if(!wallet){ throw new Error('กรุณากรอก Wallet Address'); }
-    const minerId = ensureMinerId(wallet);
-    await apiFetch('/api/mining/register', {
+    const userId = ensureMinerId(wallet);
+    const ratePerHour = Number(byId('mineHashrate').value || 0) / 3600; // Convert MH/s to OBZ/hour (simplified)
+    await apiFetch('/api/vmining/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ miner_id: minerId, wallet_address: wallet }),
+      body: JSON.stringify({ userId, walletAddress: wallet, ratePerHour: ratePerHour || undefined }),
     });
     miningState.wallet = wallet;
-    return { minerId, wallet };
+    miningState.userId = userId;
+    return { userId, wallet };
   }
 
-  async function authorizeMinerSession(){
-    const wallet = byId('mineWallet').value.trim();
-    if(!wallet){ throw new Error('กรุณากรอก Wallet Address'); }
-    const minerId = ensureMinerId(wallet);
-    statusText('กำลังยืนยัน challenge', 'orange');
-
-    const challenge = await apiFetch('/api/mining/challenge', {
+  async function stopMiningApi(){
+    if(!miningState.userId){ return; }
+    await apiFetch('/api/vmining/stop', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wallet_address: wallet }),
+      body: JSON.stringify({ userId: miningState.userId }),
     });
+  }
 
-    const nonce = await solvePowChallenge(challenge.challenge, challenge.difficulty);
-    const auth = await apiFetch('/api/mining/authorize', {
+  async function getMiningStatus(){
+    if(!miningState.userId){ return null; }
+    return await apiFetch('/api/vmining/status/' + encodeURIComponent(miningState.userId));
+  }
+
+  async function getPoolStatus(){
+    return await apiFetch('/api/vmining/pool');
+  }
+
+  async function requestWithdrawal(amountObz){
+    if(!miningState.userId || !miningState.wallet){ throw new Error('กรุณาเริ่มขุดก่อน'); }
+    return await apiFetch('/api/vmining/withdraw', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        miner_id: minerId,
-        wallet_address: wallet,
-        challenge_id: challenge.challenge_id,
-        challenge_nonce: nonce,
-      }),
-    });
-
-    miningState.wallet = wallet;
-    miningState.sessionToken = auth.session_token;
-    localStorage.setItem(SESSION_TOKEN_KEY, miningState.sessionToken);
-    return auth;
-  }
-
-  async function submitMineTick(){
-    const hashrate = Number(byId('mineHashrate').value || 0);
-    if(!hashrate || hashrate < 1){
-      throw new Error('Hashrate ต้องมากกว่า 0');
-    }
-    await apiFetch('/api/mining/mine', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        miner_id: miningState.minerId,
-        wallet_address: miningState.wallet,
-        hashrate: hashrate,
-        session_token: miningState.sessionToken,
+        userId: miningState.userId,
+        walletAddress: miningState.wallet,
+        amount: amountObz,
       }),
     });
   }
@@ -711,41 +680,44 @@
     byId('weekTotal').textContent = 'รวม ' + vals.reduce((a, b) => a + b, 0).toFixed(4) + ' OBZ';
   }
 
-  function renderStats(miner, network){
-    const total = Number(miner.total_reward || 0);
-    const today = Number(miner.today_reward || 0);
-    const avgHash = Number(miner.avg_hashrate || 0);
-    const hashNow = Number(network.avg_recent_hashrate || avgHash || 0);
+  function renderStats(status, pool){
+    const total = Number(status.claimableObz || 0);
+    const totalMined = Number(status.totalMinedObz || 0);
+    const rate = Number(status.ratePerHour || 0);
+    const running = status.running || false;
 
     byId('totalReward').textContent = total.toFixed(4) + ' OBZ';
     byId('totalUSD').textContent = fmtUsd(total * OBZ_PRICE_USD);
-    byId('todayReward').textContent = '+' + today.toFixed(4) + ' OBZ';
+    byId('todayReward').textContent = '+' + totalMined.toFixed(4) + ' OBZ';
     byId('obzAmount').textContent = total.toFixed(4);
     byId('obzUSD').textContent = fmtUsd(total * OBZ_PRICE_USD);
-    byId('obzToday').textContent = '+' + today.toFixed(4);
-    byId('totalAllUSD').textContent = fmtUsd((total * OBZ_PRICE_USD) + 7.61 + 7.97);
-    byId('k-hash').textContent = avgHash.toFixed(1) + ' MH/s';
-    byId('k-today').textContent = today.toFixed(4);
-    byId('k-usd').textContent = fmtUsd(today * OBZ_PRICE_USD);
-    byId('totalHash').textContent = hashNow.toFixed(1) + ' MH/s';
-    byId('k-miners').textContent = String(network.miners_online || 0) + ' / ' + String(network.miners_online || 0);
-    byId('minerOnline').textContent = String(network.miners_online || 0) + ' Online';
-    byId('avgHash').textContent = 'เฉลี่ย ' + avgHash.toFixed(1) + ' MH/s';
+    byId('obzToday').textContent = '+' + totalMined.toFixed(4);
+    byId('totalAllUSD').textContent = fmtUsd(total * OBZ_PRICE_USD);
+    byId('k-hash').textContent = rate.toFixed(2) + ' OBZ/hr';
+    byId('k-today').textContent = totalMined.toFixed(4);
+    byId('k-usd').textContent = fmtUsd(totalMined * OBZ_PRICE_USD);
+    byId('totalHash').textContent = rate.toFixed(2) + ' OBZ/hr';
+    byId('k-miners').textContent = String(pool.activeMiners || 0) + ' กำลังขุด';
+    byId('minerOnline').textContent = String(pool.activeMiners || 0) + ' Online';
+    byId('avgHash').textContent = 'เหลือวันนี้ ' + (pool.remainingObz || 0).toFixed(2) + ' OBZ';
     byId('modalBalance').textContent = total.toFixed(4) + ' OBZ';
     byId('withdrawAmt').value = total.toFixed(4);
 
-    renderHistory(miner.recent_events || []);
-    renderRewardsChart(miner.recent_events || []);
+    if(running){
+      statusText('กำลังขุด', 'green');
+    } else {
+      statusText('หยุดขุด', 'orange');
+    }
   }
 
   async function refreshStats(){
-    if(!miningState.minerId){ return; }
+    if(!miningState.userId){ return; }
     try {
-      const [miner, network] = await Promise.all([
-        apiFetch('/api/mining/stats/' + encodeURIComponent(miningState.minerId)),
-        apiFetch('/api/mining/network'),
+      const [status, pool] = await Promise.all([
+        getMiningStatus(),
+        getPoolStatus(),
       ]);
-      renderStats(miner, network);
+      renderStats(status, pool);
     } catch (err) {
       byId('mineHint').textContent = 'เชื่อมต่อ API ไม่สำเร็จ: ' + err.message;
     }
@@ -757,33 +729,15 @@
       if(!miningState.apiBase){ throw new Error('กรุณากรอก API Base URL'); }
       localStorage.setItem(API_BASE_KEY, miningState.apiBase);
 
-      await registerMiner();
-      await authorizeMinerSession();
-      await submitMineTick();
+      await startMiningApi();
       await refreshStats();
 
-      if(miningState.tickTimer){ clearInterval(miningState.tickTimer); }
       if(miningState.refreshTimer){ clearInterval(miningState.refreshTimer); }
 
       miningState.running = true;
-      miningState.tickTimer = setInterval(async () => {
-        try {
-          await submitMineTick();
-          await refreshStats();
-          statusText('กำลังขุด', 'green');
-        } catch (err) {
-          if(String(err.message).includes('cooldown')){
-            statusText('รอรอบขุดถัดไป', 'orange');
-            return;
-          }
-          statusText('ขุดสะดุด', 'red');
-          byId('mineHint').textContent = 'ขุดไม่สำเร็จ: ' + err.message;
-        }
-      }, 15000);
-
-      miningState.refreshTimer = setInterval(refreshStats, 10000);
+      miningState.refreshTimer = setInterval(refreshStats, 3000);
       byId('startMiningBtn').textContent = '⏹ Stop Mining';
-      byId('mineHint').textContent = 'กำลังขุดด้วย Miner ID: ' + miningState.minerId + ' (anti-bot session active)';
+      byId('mineHint').textContent = 'กำลังขุดด้วย User ID: ' + miningState.userId + ' (Timer-based)';
       statusText('กำลังขุด', 'green');
     } catch (err) {
       statusText('เริ่มขุดไม่สำเร็จ', 'red');
@@ -791,13 +745,16 @@
     }
   }
 
-  function stopMining(){
+  async function stopMining(){
+    try {
+      await stopMiningApi();
+    } catch (_) { /* ignore */ }
     miningState.running = false;
-    if(miningState.tickTimer){ clearInterval(miningState.tickTimer); miningState.tickTimer = null; }
     if(miningState.refreshTimer){ clearInterval(miningState.refreshTimer); miningState.refreshTimer = null; }
     byId('startMiningBtn').textContent = '▶ Start Mining';
     statusText('หยุดขุด', 'orange');
-    byId('mineHint').textContent = 'หยุดการขุดชั่วคราวแล้ว';
+    byId('mineHint').textContent = 'หยุดการขุดชั่วคราวแล้ว (เหรียญยังคงอยู่)';
+    await refreshStats();
   }
 
   /* Hashrate visualization based on live total hash. */
@@ -841,8 +798,8 @@
     const submitBtn = modal.querySelector('button:last-child');
     const old = submitBtn.textContent;
     const amount = Number(byId('withdrawAmt').value || 0);
-    if(!miningState.minerId || !miningState.sessionToken){
-      byId('mineHint').textContent = 'ต้อง Start Mining ก่อนถึงจะส่งคำขอถอนเข้าคิวได้';
+    if(!miningState.userId){
+      byId('mineHint').textContent = 'ต้อง Start Mining ก่อนถึงจะถอนได้';
       return;
     }
     if(!amount || amount <= 0){
@@ -851,20 +808,18 @@
     }
     submitBtn.textContent = 'กำลังส่งคำขอ...';
     try {
-      await apiFetch('/api/mining/payout/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          miner_id: miningState.minerId,
-          amount: amount,
-          session_token: miningState.sessionToken,
-        }),
-      });
-      submitBtn.textContent = '✅ ส่งคำขอแล้ว!';
-      byId('mineHint').textContent = 'ส่งคำขอถอนสำเร็จ รอแอดมินอนุมัติในคิวจ่ายรางวัล';
+      const result = await requestWithdrawal(amount);
+      if(result.status === 'PENDING'){
+        submitBtn.textContent = '⏳ รอแอดมินอนุมัติ';
+        byId('mineHint').textContent = 'ยอดถอนเกิน 50 USDT เข้าคิวรอการอนุมัติจากแอดมิน';
+      } else {
+        submitBtn.textContent = '✅ สำเร็จ!';
+        byId('mineHint').textContent = 'ถอนสำเร็จ: ' + (result.txHash || 'ดูรายละเอียดใน log');
+      }
       setTimeout(()=>{
         modal.style.display='none';
         submitBtn.textContent = old;
+        refreshStats();
       },1600);
     } catch (err) {
       submitBtn.textContent = old;
@@ -896,7 +851,7 @@
 
   byId('startMiningBtn').addEventListener('click', async () => {
     if(miningState.running){
-      stopMining();
+      await stopMining();
       return;
     }
     // Auto-trigger the wallet connect flow instead of erroring when no address is set yet.
@@ -904,7 +859,7 @@
       const connected = await connectWallet();
       if(!connected){ return; }
     }
-    startMining();
+    await startMining();
   });
 
   setInterval(() => {
@@ -921,10 +876,10 @@
   miningState.apiBase = byId('mineApiBase').value.trim();
   drawHashChart();
 
-  if(miningState.minerId){
+  if(miningState.userId){
     refreshStats();
     statusText('พร้อมต่อจากรอบก่อน', 'cyan');
-    byId('mineHint').textContent = 'พบ Miner ID เดิม: ' + miningState.minerId;
+    byId('mineHint').textContent = 'พบ User ID เดิม: ' + miningState.userId;
   }
 </script>
 </body>

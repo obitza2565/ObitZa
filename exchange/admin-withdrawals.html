@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OBZ Admin · Withdrawal Approvals</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(103, 232, 249, 0.2);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 { color: #67e8f9; font-size: 28px; display: flex; align-items: center; gap: 12px; }
+    .status-badge {
+      background: #10b981;
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .status-badge.warning { background: #f59e0b; }
+    .status-badge.error { background: #ef4444; }
+    .card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(103, 232, 249, 0.15);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      color: #67e8f9;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+    }
+    .config-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 12px;
+    }
+    .input-group { display: flex; flex-direction: column; gap: 8px; }
+    .input-group label { font-size: 14px; color: #94a3b8; font-weight: 500; }
+    .input-group input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(103, 232, 249, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      color: #e2e8f0;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #67e8f9;
+      box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(103, 232, 249, 0.1);
+    }
+    th {
+      color: #67e8f9;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tr:hover { background: rgba(103, 232, 249, 0.05); }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .badge-paid { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .badge-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-right: 8px;
+    }
+    .btn-approve {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+    .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+    .btn-reject {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+    .btn-reject:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+    .btn-refresh {
+      background: rgba(103, 232, 249, 0.2);
+      color: #67e8f9;
+      border: 1px solid rgba(103, 232, 249, 0.3);
+    }
+    .btn-refresh:hover { background: rgba(103, 232, 249, 0.3); }
+    .wallet-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .wallet-card {
+      background: rgba(15, 23, 42, 0.5);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(103, 232, 249, 0.1);
+    }
+    .wallet-card .label { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+    .wallet-card .value { font-size: 20px; font-weight: 700; color: #67e8f9; }
+    .wallet-card .sub { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .log-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(103, 232, 249, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      color: #94a3b8;
+    }
+    .log-entry { margin-bottom: 8px; padding: 4px 0; border-bottom: 1px solid rgba(103, 232, 249, 0.05); }
+    .log-entry .time { color: #67e8f9; }
+    .log-entry .level-info { color: #10b981; }
+    .log-entry .level-error { color: #ef4444; }
+    .log-entry .level-warning { color: #f59e0b; }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    @media (max-width: 768px) {
+      .config-section { grid-template-columns: 1fr; }
+      .wallet-info { grid-template-columns: 1fr; }
+      table { font-size: 12px; }
+      th, td { padding: 8px 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛡️ OBZ Withdrawal Admin</h1>
+      <div>
+        <span class="status-badge" id="connectionStatus">Connecting...</span>
+        <button class="btn btn-refresh" onclick="refreshAll()" style="margin-left: 12px;">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <!-- Configuration -->
+    <div class="card">
+      <h2>⚙️ API Configuration</h2>
+      <div class="config-section">
+        <div class="input-group">
+          <label>API Base URL</label>
+          <input type="text" id="apiBase" placeholder="https://api.obzexchange.com">
+        </div>
+        <div class="input-group">
+          <label>Admin API Key</label>
+          <input type="password" id="adminKey" placeholder="Enter ADMIN_API_KEY from .env">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Hot Wallet Address</label>
+        <input type="text" id="walletAddress" readonly style="background: rgba(15, 23, 42, 0.3); font-family: monospace;">
+      </div>
+    </div>
+
+    <!-- Hot Wallet Status -->
+    <div class="card">
+      <h2>💰 Hot Wallet Status</h2>
+      <div class="wallet-info">
+        <div class="wallet-card">
+          <div class="label">BNB Balance (Gas)</div>
+          <div class="value" id="bnbBalance">-</div>
+          <div class="sub" id="bnbStatus">Checking...</div>
+        </div>
+        <div class="wallet-card">
+          <div class="label">OBZ Balance</div>
+          <div class="value" id="obzBalance">-</div>
+          <div class="sub" id="obzStatus">Checking...</div>
+        </div>
+        <div class="wallet-card">
+          <div class="label">Mining Pool Today</div>
+          <div class="value" id="poolStatus">-</div>
+          <div class="sub">Daily Cap: <span id="dailyCap">100</span> OBZ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Withdrawals -->
+    <div class="card">
+      <h2>⏳ Pending Withdrawals (<span id="pendingCount">0</span>)</h2>
+      <div id="pendingTableContainer">
+        <table id="pendingTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Wallet</th>
+              <th>Amount (OBZ)</th>
+              <th>Value (USDT)</th>
+              <th>Requested</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pendingBody">
+            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent History -->
+    <div class="card">
+      <h2>📋 Recent History</h2>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>TX Hash</th>
+            <th>Processed</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="6" class="empty-state">No history yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card">
+      <h2>📝 Activity Log</h2>
+      <div class="log-box" id="logBox">
+        <div class="log-entry"><span class="time">[System]</span> <span class="level-info">Waiting for connection...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app-config.js"></script>
+  <script>
+    const isLocalHost = ['localhost', '127.0.0.1'].includes(location.hostname) || location.protocol === 'file:';
+    const defaultApiBase = (window.OBZ_CONFIG && window.OBZ_CONFIG.apiBase)
+      || (isLocalHost ? 'http://localhost:4100' : 'https://api.obzexchange.com');
+
+    const state = {
+      apiBase: localStorage.getItem('adminApiBase') || defaultApiBase,
+      adminKey: localStorage.getItem('adminApiKey') || '',
+      pending: [],
+      history: [],
+      autoRefresh: null
+    };
+
+    function log(message, level = 'info') {
+      const box = document.getElementById('logBox');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      const time = new Date().toLocaleTimeString('th-TH');
+      entry.innerHTML = `<span class="time">[${time}]</span> <span class="level-${level}">${message}</span>`;
+      box.insertBefore(entry, box.firstChild);
+      if (box.children.length > 50) box.removeChild(box.lastChild);
+    }
+
+    function updateStatus(status, type = 'success') {
+      const el = document.getElementById('connectionStatus');
+      el.textContent = status;
+      el.className = 'status-badge' + (type === 'error' ? ' error' : type === 'warning' ? ' warning' : '');
+    }
+
+    async function apiCall(path, method = 'GET', body = null) {
+      const url = state.apiBase.replace(/\/$/, '') + path;
+      const options = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': state.adminKey
+        }
+      };
+      if (body) options.body = JSON.stringify(body);
+      
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      return res.json();
+    }
+
+    async function loadWalletInfo() {
+      try {
+        const data = await apiCall('/api/vmining/hot-wallet/balance');
+        document.getElementById('walletAddress').value = data.address;
+        document.getElementById('bnbBalance').textContent = parseFloat(data.bnb).toFixed(4) + ' BNB';
+        document.getElementById('obzBalance').textContent = parseFloat(data.obz).toFixed(2) + ' OBZ';
+        
+        const bnbStatus = document.getElementById('bnbStatus');
+        const obzStatus = document.getElementById('obzStatus');
+        
+        if (parseFloat(data.bnb) < 0.02) {
+          bnbStatus.textContent = '⚠️ Low gas!';
+          bnbStatus.style.color = '#f59e0b';
+        } else {
+          bnbStatus.textContent = '✓ Sufficient';
+          bnbStatus.style.color = '#10b981';
+        }
+        
+        if (parseFloat(data.obz) < 100) {
+          obzStatus.textContent = '⚠️ Low balance!';
+          obzStatus.style.color = '#f59e0b';
+        } else {
+          obzStatus.textContent = '✓ Sufficient';
+          obzStatus.style.color = '#10b981';
+        }
+        
+        log(`Wallet loaded: ${data.address.slice(0, 10)}...`, 'info');
+      } catch (err) {
+        log('Failed to load wallet: ' + err.message, 'error');
+        updateStatus('Wallet Error', 'error');
+      }
+    }
+
+    async function loadPoolStatus() {
+      try {
+        const data = await apiCall('/api/vmining/pool');
+        document.getElementById('poolStatus').textContent = data.totalMinedTodayObz.toFixed(2) + ' OBZ';
+        document.getElementById('dailyCap').textContent = data.dailyCapObz;
+      } catch (err) {
+        log('Failed to load pool status: ' + err.message, 'error');
+      }
+    }
+
+    async function loadPending() {
+      try {
+        const data = await apiCall('/api/admin/withdrawals?status=PENDING');
+        state.pending = data;
+        renderPending();
+        document.getElementById('pendingCount').textContent = data.length;
+        log(`Loaded ${data.length} pending withdrawals`, 'info');
+      } catch (err) {
+        log('Failed to load pending: ' + err.message, 'error');
+        document.getElementById('pendingBody').innerHTML = '<tr><td colspan="7" style="color: #ef4444; text-align: center;">Failed to load: ' + err.message + '</td></tr>';
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const data = await apiCall('/api/admin/withdrawals');
+        state.history = data.filter(r => r.status !== 'PENDING').slice(0, 10);
+        renderHistory();
+      } catch (err) {
+        log('Failed to load history: ' + err.message, 'error');
+      }
+    }
+
+    function renderPending() {
+      const tbody = document.getElementById('pendingBody');
+      if (!state.pending.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="icon">✅</div><div>No pending withdrawals</div></td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = state.pending.map(r => `
+        <tr>
+          <td style="font-family: monospace; font-size: 11px;">${r.id.slice(0, 8)}...</td>
+          <td>${r.userId}</td>
+          <td style="font-family: monospace; font-size: 11px;" title="${r.walletAddress}">${r.walletAddress.slice(0, 10)}...</td>
+          <td><strong>${r.amountObz.toFixed(4)}</strong></td>
+          <td>$${r.amountUsdt.toFixed(2)}</td>
+          <td>${new Date(r.createdAt).toLocaleString('th-TH')}</td>
+          <td>
+            <button class="btn btn-approve" onclick="approve('${r.id}')">✓ Approve</button>
+            <button class="btn btn-reject" onclick="reject('${r.id}')">✗ Reject</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderHistory() {
+      const tbody = document.getElementById('historyBody');
+      if (!state.history.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No processed withdrawals yet</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = state.history.map(r => `
+        <tr>
+          <td style="font-family: monospace; font-size: 11px;">${r.id.slice(0, 8)}...</td>
+          <td>${r.userId}</td>
+          <td>${r.amountObz.toFixed(4)} OBZ</td>
+          <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+          <td style="font-family: monospace; font-size: 11px;">
+            ${r.txHash ? `<a href="https://bscscan.com/tx/${r.txHash}" target="_blank" style="color: #67e8f9;">${r.txHash.slice(0, 10)}...</a>` : '-'}
+          </td>
+          <td>${r.decidedAt ? new Date(r.decidedAt).toLocaleString('th-TH') : '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function approve(id) {
+      if (!confirm('Approve this withdrawal? This will send OBZ tokens immediately.')) return;
+      try {
+        log(`Approving withdrawal ${id.slice(0, 8)}...`, 'info');
+        const result = await apiCall(`/api/admin/withdrawals/${id}/approve`, 'POST');
+        log(`✅ Approved! TX: ${result.txHash}`, 'info');
+        updateStatus('Approved', 'success');
+        refreshAll();
+      } catch (err) {
+        log('Approve failed: ' + err.message, 'error');
+        alert('Failed to approve: ' + err.message);
+      }
+    }
+
+    async function reject(id) {
+      const note = prompt('Rejection reason (optional):');
+      if (note === null) return; // Cancelled
+      try {
+        log(`Rejecting withdrawal ${id.slice(0, 8)}...`, 'warning');
+        await apiCall(`/api/admin/withdrawals/${id}/reject`, 'POST', { note });
+        log('❌ Rejected', 'warning');
+        updateStatus('Rejected', 'warning');
+        refreshAll();
+      } catch (err) {
+        log('Reject failed: ' + err.message, 'error');
+        alert('Failed to reject: ' + err.message);
+      }
+    }
+
+    function refreshAll() {
+      loadWalletInfo();
+      loadPoolStatus();
+      loadPending();
+      loadHistory();
+    }
+
+    function startAutoRefresh() {
+      if (state.autoRefresh) clearInterval(state.autoRefresh);
+      state.autoRefresh = setInterval(refreshAll, 30000); // Every 30 seconds
+    }
+
+    // Initialize
+    document.getElementById('apiBase').value = state.apiBase;
+    document.getElementById('adminKey').value = state.adminKey;
+    
+    document.getElementById('apiBase').addEventListener('change', (e) => {
+      state.apiBase = e.target.value;
+      localStorage.setItem('adminApiBase', state.apiBase);
+      refreshAll();
+    });
+    
+    document.getElementById('adminKey').addEventListener('change', (e) => {
+      state.adminKey = e.target.value;
+      localStorage.setItem('adminApiKey', state.adminKey);
+      refreshAll();
+    });
+
+    // Test connection
+    fetch(state.apiBase + '/api/vmining/pool')
+      .then(() => {
+        updateStatus('Connected', 'success');
+        log('Connected to API', 'info');
+        refreshAll();
+        startAutoRefresh();
+      })
+      .catch(() => {
+        updateStatus('Connection Failed', 'error');
+        log('Cannot connect to API. Check URL and ensure server is running.', 'error');
+      });
+  </script>
+</body>
+</html>
