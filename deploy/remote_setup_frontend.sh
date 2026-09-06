@@ -56,6 +56,35 @@ server {
         add_header Cache-Control "public";
     }
 }
+
+  server {
+    listen 443 ssl;
+    server_name obzexchange.com;
+
+    root /var/www/obzexchange;
+    index index.html;
+
+    ssl_certificate /etc/letsencrypt/live/obzexchange.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/obzexchange.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    auth_basic "OBZ Private";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    location / {
+      try_files $uri $uri/ =404;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
+      expires 1h;
+      add_header Cache-Control "public";
+    }
+  }
 NGINXEOF
 
 ln -sf /etc/nginx/sites-available/obz-frontend /etc/nginx/sites-enabled/obz-frontend
