@@ -17,7 +17,6 @@ export function validateRequest(req: Request, res: Response, next: NextFunction)
 export const validateStartMining = [
   body("userId").trim().matches(USER_ID_PATTERN).withMessage("userId must be 1-128 alphanumeric/-/_ characters"),
   body("walletAddress").trim().matches(WALLET_ADDRESS_PATTERN).withMessage("walletAddress must be a valid 0x address"),
-  body("ratePerHour").optional().isFloat({ gt: 0, lt: 1000 }).withMessage("ratePerHour must be between 0 and 1000"),
   validateRequest,
 ];
 

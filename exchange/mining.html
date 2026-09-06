@@ -471,7 +471,8 @@
 
 <script src="app-config.js"></script>
 <script>
-  const OBZ_PRICE_USD = 4.218;
+  // Tokenomics: 1 OBZ is displayed at a fixed value of 1 USDT.
+  const OBZ_PRICE_USD = 1;
   const API_BASE_KEY = 'obzMiningApiBase';
   const MINER_ID_KEY = 'obzMiningMinerId';
   const SESSION_TOKEN_KEY = 'obzMiningSessionToken';
@@ -571,11 +572,10 @@
     const wallet = byId('mineWallet').value.trim();
     if(!wallet){ throw new Error('กรุณากรอก Wallet Address'); }
     const userId = ensureMinerId(wallet);
-    const ratePerHour = Number(byId('mineHashrate').value || 0) / 3600; // Convert MH/s to OBZ/hour (simplified)
     await apiFetch('/api/vmining/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, walletAddress: wallet, ratePerHour: ratePerHour || undefined }),
+      body: JSON.stringify({ userId, walletAddress: wallet }),
     });
     miningState.wallet = wallet;
     miningState.userId = userId;

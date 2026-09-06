@@ -59,21 +59,23 @@ export class MiningPool {
     }
   }
 
-  startMining(userId: string, walletAddress: string, ratePerHour?: number): MiningStatus {
+  startMining(userId: string, walletAddress: string): MiningStatus {
     const now = Date.now();
     const existing = this.sessions.get(userId);
     if (existing) {
       existing.walletAddress = walletAddress;
       existing.running = true;
       existing.lastTickAt = now;
-      if (ratePerHour && ratePerHour > 0) existing.ratePerHour = ratePerHour;
+      existing.ratePerHour = config.defaultMiningRatePerHour;
       return this.toStatus(existing);
     }
 
     const session: MiningSession = {
       userId,
       walletAddress,
-      ratePerHour: ratePerHour && ratePerHour > 0 ? ratePerHour : config.defaultMiningRatePerHour,
+      // Reward rates are owned by the server. Never accept a client-supplied
+      // rate: it would allow a browser request to bypass mining difficulty.
+      ratePerHour: config.defaultMiningRatePerHour,
       running: true,
       claimableObz: 0,
       totalMinedObz: 0,

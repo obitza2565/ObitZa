@@ -43,8 +43,8 @@ export function createServer() {
   });
 
   app.post("/api/vmining/start", validateStartMining, (req: Request, res: Response) => {
-    const { userId, walletAddress, ratePerHour } = req.body;
-    const status = miningPool.startMining(userId, walletAddress, ratePerHour ? Number(ratePerHour) : undefined);
+    const { userId, walletAddress } = req.body;
+    const status = miningPool.startMining(userId, walletAddress);
     logActivity("mining_started", { userId, walletAddress });
     res.json(status);
   });
