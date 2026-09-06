@@ -4,6 +4,9 @@
 .env.local
 obz_miner.db
 obz_miner.db-*
+NEW_ADMIN_KEY.txt
+*_KEY.txt
+*_SECRET.txt
 
 # Python cache
 __pycache__/
