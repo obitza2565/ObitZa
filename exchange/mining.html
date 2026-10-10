@@ -735,7 +735,9 @@
       if(miningState.refreshTimer){ clearInterval(miningState.refreshTimer); }
 
       miningState.running = true;
-      miningState.refreshTimer = setInterval(refreshStats, 3000);
+      // Poll every 8s (2 requests per tick = ~15 req/min) to stay well under
+      // the API rate limit even when several users share one IP.
+      miningState.refreshTimer = setInterval(refreshStats, 8000);
       byId('startMiningBtn').textContent = '⏹ Stop Mining';
       byId('mineHint').textContent = 'กำลังขุดด้วย User ID: ' + miningState.userId + ' (Timer-based)';
       statusText('กำลังขุด', 'green');

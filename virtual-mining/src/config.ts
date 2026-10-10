@@ -47,9 +47,10 @@ export const config = {
   // Admin API access (required to approve/reject pending withdrawals).
   adminApiKey: process.env.ADMIN_API_KEY || "",
 
-  // Per-IP request throttling.
+  // Per-IP request throttling. 300/min is comfortable for several friends
+  // sharing one IP (e.g. office NAT) while the mining dashboard auto-refreshes.
   rateLimitWindowMs: envNumber("RATE_LIMIT_WINDOW_MS", 60_000),
-  rateLimitMax: envNumber("RATE_LIMIT_MAX", 60),
+  rateLimitMax: envNumber("RATE_LIMIT_MAX", 300),
 
   // Number of trusted reverse-proxy hops (1 = only the immediate proxy, e.g.
   // nginx). A boolean `true` would let any client spoof X-Forwarded-For and
