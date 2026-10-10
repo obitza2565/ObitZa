@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">OBZ Token Gold Coin</title>
+  <desc id="desc">Front-facing 3D-style gold crypto coin. A thick polished gold ring letter O engraved with OBZ TOKEN and OBZ-POOL, with large bold letters BZ in the center.</desc>
+  <defs>
+    <!-- Polished gold ring gradient -->
+    <linearGradient id="ringGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8c9"/>
+      <stop offset="0.18" stop-color="#f6d34e"/>
+      <stop offset="0.38" stop-color="#c88f10"/>
+      <stop offset="0.52" stop-color="#ffe98a"/>
+      <stop offset="0.68" stop-color="#b57808"/>
+      <stop offset="0.86" stop-color="#e9bd3a"/>
+      <stop offset="1" stop-color="#6e3f02"/>
+    </linearGradient>
+    <!-- Darker gold for ring inner bevel -->
+    <linearGradient id="ringBevel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a5205"/>
+      <stop offset="0.5" stop-color="#f2c64c"/>
+      <stop offset="1" stop-color="#7a4503"/>
+    </linearGradient>
+    <!-- Sandy matte gold face inside the ring -->
+    <radialGradient id="faceMatte" cx="42%" cy="36%" r="70%">
+      <stop offset="0" stop-color="#f0d489"/>
+      <stop offset="0.55" stop-color="#d9ae4a"/>
+      <stop offset="1" stop-color="#a8761a"/>
+    </radialGradient>
+    <!-- Letters BZ metallic gold -->
+    <linearGradient id="letterGold" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#fffbe0"/>
+      <stop offset="0.35" stop-color="#f7d154"/>
+      <stop offset="0.7" stop-color="#c07f0a"/>
+      <stop offset="1" stop-color="#8a5205"/>
+    </linearGradient>
+    <!-- Engraved text color on rim -->
+    <linearGradient id="engrave" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5f3702"/>
+      <stop offset="1" stop-color="#8a5205"/>
+    </linearGradient>
+    <filter id="coinShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#2a1600" flood-opacity="0.45"/>
+    </filter>
+    <filter id="innerGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feOffset in="blur" dx="0" dy="2" result="off"/>
+      <feComposite in="off" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadow"/>
+      <feFlood flood-color="#5f3702" flood-opacity="0.55"/>
+      <feComposite in2="shadow" operator="in"/>
+      <feComposite in2="SourceGraphic" operator="over"/>
+    </filter>
+    <!-- Circular paths for rim engraving (centered ring radius ~188) -->
+    <path id="rimTopArc" d="M 68,256 A 188,188 0 0 1 444,256" fill="none"/>
+    <path id="rimBottomArc" d="M 444,256 A 188,188 0 0 1 68,256" fill="none"/>
+  </defs>
+
+  <g filter="url(#coinShadow)">
+    <!-- Outer edge / thickness -->
+    <circle cx="256" cy="256" r="232" fill="#4e2a00" stroke="#2e1800" stroke-width="6"/>
+
+    <!-- Thick polished gold ring (the letter O) -->
+    <circle cx="256" cy="256" r="222" fill="url(#ringGold)" stroke="#fff2a8" stroke-width="3"/>
+    <!-- Ring bevel highlight -->
+    <circle cx="256" cy="256" r="214" fill="none" stroke="url(#ringBevel)" stroke-width="6" opacity="0.8"/>
+
+    <!-- Milled edge (reeding) -->
+    <circle cx="256" cy="256" r="222" fill="none" stroke="#7a4503" stroke-width="10" stroke-dasharray="3 9" opacity="0.55"/>
+
+    <!-- Inner matte face -->
+    <circle cx="256" cy="256" r="160" fill="url(#faceMatte)" stroke="#7a4503" stroke-width="4"/>
+    <circle cx="256" cy="256" r="152" fill="none" stroke="#ffe98a" stroke-width="2" opacity="0.7"/>
+
+    <!-- Engraved rim text: OBZ TOKEN (top arc, upright) -->
+    <text font-family="Arial, sans-serif" font-size="26" font-weight="800"
+          letter-spacing="8" fill="#6b3d04" opacity="0.95">
+      <textPath href="#rimTopArc" startOffset="50%" text-anchor="middle">OBZ TOKEN</textPath>
+    </text>
+    <!-- Engraved rim text: OBZ-POOL (bottom arc, upright) -->
+    <text font-family="Arial, sans-serif" font-size="26" font-weight="800"
+          letter-spacing="8" fill="#6b3d04" opacity="0.95">
+      <textPath href="#rimBottomArc" startOffset="50%" text-anchor="middle">OBZ-POOL</textPath>
+    </text>
+
+    <!-- Small star separators on rim sides -->
+    <text x="52" y="266" font-family="Georgia, serif" font-size="26" fill="#8a5205" text-anchor="middle">★</text>
+    <text x="460" y="266" font-family="Georgia, serif" font-size="26" fill="#8a5205" text-anchor="middle">★</text>
+
+    <!-- Center letters BZ, modern blocky style -->
+    <text x="256" y="304" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+          font-size="150" font-weight="900" letter-spacing="4"
+          fill="#633900" opacity="0.45">BZ</text>
+    <text x="253" y="298" text-anchor="middle" font-family="Arial Black, Arial, sans-serif"
+          font-size="150" font-weight="900" letter-spacing="4"
+          fill="url(#letterGold)" stroke="#fff2a8" stroke-width="2.5">BZ</text>
+
+    <!-- Elegant underline flourish beneath BZ -->
+    <path d="M176 340 q 80 26 160 0" fill="none" stroke="#8a5205" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+    <path d="M196 350 q 60 18 120 0" fill="none" stroke="#ffe98a" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+
+    <!-- Top-left specular highlight for 3D shine -->
+    <ellipse cx="165" cy="125" rx="105" ry="46" fill="#ffffff" opacity="0.22" transform="rotate(-35 165 125)"/>
+  </g>
+</svg>
