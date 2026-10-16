@@ -8,7 +8,20 @@ const WBNB          = process.env.WBNB_ADDRESS    || "0xbb4CdB9CBd36B01bD1cBaEBF
 const FEE_WALLET    = process.env.FEE_WALLET      || "0x41a0096ef2E784d574156Ddec32853B666C6dbE1"; // admin/hot wallet
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
+  // Guard: without PRIVATE_KEY in token/.env, Hardhat has no signer and
+  // deployer would be undefined (the "reading 'address'" crash).
+  const signers = await ethers.getSigners();
+  if (!process.env.PRIVATE_KEY || signers.length === 0) {
+    console.error("❌ ไม่พบ PRIVATE_KEY — ไม่มีบัญชี deployer ให้ใช้งาน");
+    console.error("");
+    console.error("วิธีแก้:");
+    console.error("  1. สร้างไฟล์ token/.env (อยู่ใน .gitignore แล้ว ปลอดภัย)");
+    console.error("  2. ใส่บรรทัดนี้:  PRIVATE_KEY=0x<private key 64 ตัวอักษรของกระเป๋า deployer>");
+    console.error("  3. กระเป๋านั้นต้องมี BNB mainnet สำหรับค่าแก๊ส (~0.01 BNB)");
+    console.error("  4. รันใหม่: npx hardhat run scripts/deploy-fee-router.js --network bscMainnet");
+    process.exit(1);
+  }
+  const [deployer] = signers;
   const net = await ethers.provider.getNetwork();
 
   console.log("═══════════════════════════════════════");

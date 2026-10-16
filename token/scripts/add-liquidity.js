@@ -39,7 +39,12 @@ async function ensureAllowance(token, owner, spender, amount, label) {
 }
 
 async function main() {
-  const [owner] = await ethers.getSigners();
+  const signers = await ethers.getSigners();
+  if (!process.env.PRIVATE_KEY || signers.length === 0) {
+    console.error("❌ ไม่พบ PRIVATE_KEY — สร้าง token/.env ใส่ PRIVATE_KEY=0x... ของกระเป๋าที่ถือ OBZ/USDT/BNB ก่อน");
+    process.exit(1);
+  }
+  const [owner] = signers;
   const router = new ethers.Contract(PANCAKE_ROUTER, ROUTER_ABI, owner);
   const obz = new ethers.Contract(OBZ, ERC20_ABI, owner);
   const usdt = new ethers.Contract(USDT, ERC20_ABI, owner);
