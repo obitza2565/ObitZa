@@ -196,7 +196,7 @@
     <a href="admin.html">Admin</a>
   </div>
   <div class="nav-actions">
-    <div style="padding:6px 10px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.28);color:var(--green);font-size:11px;font-weight:800;letter-spacing:0.05em;">BSC TESTNET</div>
+    <div style="padding:6px 10px;border-radius:999px;background:rgba(242,198,76,0.12);border:1px solid rgba(242,198,76,0.35);color:#f2c64c;font-size:11px;font-weight:800;letter-spacing:0.05em;">BNB CHAIN</div>
     <button class="btn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy Contract</button>
     <button class="btn" onclick="if(window.ethereum){window.ethereum.request({method:'wallet_watchAsset',params:{type:'ERC20',options:{address:'0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7',symbol:'OBZ',decimals:18,image:'https://raw.githubusercontent.com/obitza2565/ObitZa/main/exchange/obz-token.png'}}}).then(()=>{const t=this.textContent;this.textContent='Added ✓';setTimeout(()=>this.textContent=t,1400);}).catch(()=>{});}else{alert('MetaMask not found. Please install MetaMask.');}">Add OBZ</button>
     <a class="btn" href="index.html">← Home</a>
@@ -356,7 +356,7 @@
         </thead>
         <tbody>
           <tr>
-            <td><div class="coin-cell"><img src="obz-token.svg" alt="OBZ gold token" class="coin-icon" style="object-fit:cover;padding:0;border:0;background:transparent;width:32px;height:32px;"/><div><div style="font-weight:700">OBZ Token</div><div style="font-size:11px;color:var(--muted)">Native · OBZ-Pool · <a href='https://testnet.bscscan.com/token/0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7' target='_blank' style='color:var(--green);text-decoration:none;font-size:10px;'>BSC Testnet ✓</a></div></div></div></td>
+            <td><div class="coin-cell"><img src="obz-token.svg" alt="OBZ gold token" class="coin-icon" style="object-fit:cover;padding:0;border:0;background:transparent;width:32px;height:32px;"/><div><div style="font-weight:700">OBZ Token</div><div style="font-size:11px;color:var(--muted)">Native · OBZ-Pool · <a href='https://bscscan.com/token/0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7' target='_blank' style='color:var(--green);text-decoration:none;font-size:10px;'>BNB Chain ✓</a></div></div></div></td>
             <td style="font-weight:700" id="obzAmount">4.8241</td>
             <td style="color:var(--cyan)" id="obzUSD">$20.36</td>
             <td style="color:var(--green)" id="obzToday">+0.0842</td>
@@ -502,8 +502,8 @@
         const { EthereumProvider } = await import('https://esm.sh/@walletconnect/ethereum-provider@2.17.0?bundle');
         return EthereumProvider.init({
           projectId: WALLETCONNECT_PROJECT_ID,
-          chains: [97],
-          optionalChains: [56],
+          chains: [56],
+          optionalChains: [1],
           showQrModal: true,
           methods: ['eth_sendTransaction', 'personal_sign', 'eth_sign', 'eth_signTypedData'],
           metadata: {

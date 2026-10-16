@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>OBZ Exchange · Swap</title>
+<style>
+  :root{
+    --bg:#030b1a;--panel:rgba(6,14,32,0.94);--line:rgba(103,232,249,0.14);
+    --text:#f8fafc;--muted:#8baac4;--cyan:#67e8f9;--green:#34d399;
+    --purple:#a855f7;--red:#f87171;--orange:#fb923c;--gold:#f2c64c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Inter,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:rgba(4,12,28,0.97);border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;}
+  .brand{font-size:1.15rem;font-weight:900;letter-spacing:0.05em;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+  .nav-links{display:flex;gap:6px;flex-wrap:wrap;}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:700;padding:8px 14px;border-radius:10px;transition:0.15s;}
+  .nav-links a:hover,.nav-links a.active{color:var(--cyan);background:rgba(103,232,249,0.08);}
+  .chain-badge{padding:5px 10px;border-radius:999px;background:rgba(242,198,76,0.12);border:1px solid rgba(242,198,76,0.35);color:var(--gold);font-size:10px;font-weight:800;letter-spacing:0.05em;}
+
+  .wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:36px 16px 60px;}
+  .swap-card{width:100%;max-width:460px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .swap-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .swap-title{font-size:1.15rem;font-weight:900;display:flex;align-items:center;gap:8px;}
+  .swap-title img{width:26px;height:26px;}
+  .wallet-btn{padding:9px 16px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--cyan),var(--purple));color:#fff;font-weight:800;font-size:13px;cursor:pointer;transition:0.15s;}
+  .wallet-btn:hover{opacity:0.9;}
+  .wallet-btn.connected{background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.35);color:var(--green);}
+
+  .box{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:6px;}
+  .box-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px;}
+  .box-row{display:flex;gap:10px;align-items:center;}
+  .amt{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:24px;font-weight:800;min-width:0;}
+  .amt::placeholder{color:rgba(139,170,196,0.4);}
+  .token-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(103,232,249,0.06);color:var(--text);font-weight:800;font-size:14px;cursor:pointer;transition:0.15s;white-space:nowrap;}
+  .token-btn:hover{border-color:var(--cyan);}
+  .token-btn img{width:20px;height:20px;}
+  .max-btn{background:none;border:0;color:var(--cyan);font-size:11px;font-weight:800;cursor:pointer;padding:2px 6px;border-radius:6px;}
+  .max-btn:hover{background:rgba(103,232,249,0.1);}
+  .flip{display:flex;justify-content:center;margin:-2px 0;}
+  .flip button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--cyan);font-size:16px;cursor:pointer;transition:0.15s;}
+  .flip button:hover{transform:rotate(180deg);border-color:var(--cyan);}
+
+  .detail{font-size:12px;color:var(--muted);background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .detail .row{display:flex;justify-content:space-between;}
+  .detail .row b{color:var(--text);}
+  .fee-row b{color:var(--gold);}
+
+  .quota{margin:12px 0;}
+  .quota-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .quota-top b{color:var(--cyan);}
+  .quota-bar{height:8px;border-radius:6px;background:rgba(255,255,255,0.06);overflow:hidden;}
+  .quota-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width 0.4s;}
+  .quota-fill.full{background:linear-gradient(90deg,var(--red),var(--orange));}
+  .quota-lock{display:none;margin-top:8px;padding:10px 12px;border-radius:10px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red);font-size:12px;font-weight:700;text-align:center;}
+  .quota-lock.show{display:block;}
+
+  .swap-btn{width:100%;padding:15px;border:0;border-radius:14px;background:linear-gradient(90deg,var(--cyan),var(--purple));color:#fff;font-weight:900;font-size:16px;cursor:pointer;transition:0.15s;margin-top:6px;box-shadow:0 8px 30px rgba(103,232,249,0.2);}
+  .swap-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .swap-btn:disabled{opacity:0.45;cursor:not-allowed;box-shadow:none;}
+  .approve-btn{width:100%;padding:13px;border:0;border-radius:14px;background:rgba(251,146,60,0.15);border:1px solid rgba(251,146,60,0.4);color:var(--orange);font-weight:800;font-size:14px;cursor:pointer;margin-top:6px;}
+  .approve-btn:hover:not(:disabled){background:rgba(251,146,60,0.25);}
+  .approve-btn:disabled{opacity:0.45;cursor:not-allowed;}
+
+  .status{margin-top:12px;font-size:13px;color:var(--muted);text-align:center;min-height:18px;word-break:break-all;}
+  .status a{color:var(--cyan);}
+  .status.err{color:var(--red);}
+  .status.ok{color:var(--green);}
+
+  .notice{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);color:var(--purple);font-size:12px;line-height:1.6;}
+  .notice b{color:var(--text);}
+
+  .dropdown{position:relative;}
+  .menu{position:absolute;right:0;top:calc(100% + 6px);background:#0a1530;border:1px solid var(--line);border-radius:12px;min-width:150px;display:none;flex-direction:column;overflow:hidden;z-index:30;box-shadow:0 12px 40px rgba(0,0,0,0.6);}
+  .menu.open{display:flex;}
+  .menu button{display:flex;align-items:center;gap:8px;padding:10px 14px;background:none;border:0;color:var(--text);font-weight:700;font-size:14px;cursor:pointer;text-align:left;}
+  .menu button:hover{background:rgba(103,232,249,0.08);}
+  .menu button img{width:20px;height:20px;}
+  @media(max-width:520px){ .swap-card{padding:16px;} .amt{font-size:20px;} }
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="index.html">OBZ X</a>
+  <div class="nav-links">
+    <a href="index.html">Markets</a>
+    <a href="trade.html">Trade</a>
+    <a href="swap.html" class="active">🔁 Swap</a>
+    <a href="mining.html">⛏️ Mining</a>
+    <a href="leaderboard.html">🏆 Leaderboard</a>
+  </div>
+  <span class="chain-badge">BNB CHAIN</span>
+</nav>
+
+<div class="wrap">
+  <div class="swap-card">
+    <div class="swap-head">
+      <div class="swap-title"><img src="obz-token.svg" alt="OBZ"/> Swap</div>
+      <button class="wallet-btn" id="walletBtn">🔗 Connect Wallet</button>
+    </div>
+
+    <!-- FROM -->
+    <div class="box">
+      <div class="box-top">
+        <span>จาก (From)</span>
+        <span>ยอดคงเหลือ: <b id="fromBal">-</b> <button class="max-btn" id="maxBtn">MAX</button></span>
+      </div>
+      <div class="box-row">
+        <input class="amt" id="amountIn" type="number" min="0" step="any" placeholder="0.0"/>
+        <div class="dropdown">
+          <button class="token-btn" id="fromTokenBtn"></button>
+          <div class="menu" id="fromMenu"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip"><button id="flipBtn" title="สลับคู่">⇅</button></div>
+
+    <!-- TO -->
+    <div class="box">
+      <div class="box-top">
+        <span>ได้รับ (To)</span>
+        <span>ยอดคงเหลือ: <b id="toBal">-</b></span>
+      </div>
+      <div class="box-row">
+        <input class="amt" id="amountOut" type="text" readonly placeholder="0.0"/>
+        <div class="dropdown">
+          <button class="token-btn" id="toTokenBtn"></button>
+          <div class="menu" id="toMenu"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="detail">
+      <div class="row"><span>อัตราแลกเปลี่ยน</span><b id="rateText">-</b></div>
+      <div class="row fee-row"><span>ค่าธรรมเนียมแพลตฟอร์ม (1%)</span><b id="feeText">-</b></div>
+      <div class="row"><span>รับขั้นต่ำ (slippage 0.5%)</span><b id="minText">-</b></div>
+    </div>
+
+    <!-- DAILY QUOTA -->
+    <div class="quota">
+      <div class="quota-top">
+        <span>โควตาเทรดวันนี้</span>
+        <span><b id="quotaUsed">0.00</b> / <b id="quotaLimit">10</b> USDT · รีเซ็ตใน <b id="quotaReset">--:--</b></span>
+      </div>
+      <div class="quota-bar"><div class="quota-fill" id="quotaFill" style="width:0%"></div></div>
+      <div class="quota-lock" id="quotaLock">🔒 ระบบล็อกโควตา — คุณเทรดครบ 10 USDT แล้ววันนี้ กรุณารอรีเซ็ตเที่ยงคืน UTC</div>
+    </div>
+
+    <button class="approve-btn" id="approveBtn" style="display:none">🔓 อนุมัติ (Approve) <span id="approveToken"></span></button>
+    <button class="swap-btn" id="swapBtn" disabled>Swap</button>
+
+    <div class="status" id="statusText"></div>
+
+    <div class="notice">
+      <b>หมายเหตุ:</b> ทุกธุรกรรมผ่าน OBZ Fee Router — หักค่าธรรมเนียม 1% เข้ากระเป๋าแพลตฟอร์ม
+      และจำกัด <b>10 USDT ต่อกระเป๋าต่อวัน</b> บังคับระดับสมาร์ทคอนแทรกต์บนเชน
+    </div>
+  </div>
+</div>
+
+<script src="app-config.js"></script>
+<script type="module">
+const CFG = window.OBZ_CONFIG;
+const $ = (id) => document.getElementById(id);
+
+let ethers;
+async function E() { return ethers || (ethers = await import('https://esm.sh/ethers@6.13.2?bundle')); }
+
+const TOKENS = {
+  OBZ:  { symbol: 'OBZ',  address: CFG.obzToken,  icon: 'obz-token.svg', decimals: 18 },
+  USDT: { symbol: 'USDT', address: CFG.usdtToken, icon: 'usdt.svg',       decimals: 18 },
+  BNB:  { symbol: 'BNB',  address: 'native',      icon: 'bnb.svg',       decimals: 18 },
+};
+const WBNB = CFG.wbnb;
+
+const ERC20_ABI = [
+  'function balanceOf(address) view returns (uint256)',
+  'function allowance(address owner, address spender) view returns (uint256)',
+  'function approve(address spender, uint256 amount) returns (bool)',
+];
+const ROUTER_ABI = [
+  'function quoteSwap(uint256 amountIn, address[] path) view returns (uint256 feeAmount, uint256 amountInNet, uint256 expectedOut, uint256 usdtValue)',
+  'function getQuota(address user) view returns (uint256 used, uint256 remaining, uint256 limit, uint256 resetsAt)',
+  'function swapExactTokensForTokensWithFee(uint256 amountIn, uint256 amountOutMin, address[] path, uint256 deadline) returns (uint256[])',
+  'function swapExactETHForTokensWithFee(uint256 amountOutMin, address[] path, uint256 deadline) payable returns (uint256[])',
+  'function swapExactTokensForETHWithFee(uint256 amountIn, uint256 amountOutMin, address[] path, uint256 deadline) returns (uint256[])',
+];
+
+const state = {
+  provider: null, signer: null, address: null, wcProvider: null,
+  from: 'OBZ', to: 'USDT', quote: null, timer: null,
+};
+
+const readProvider = () => new (ethers.providers ?? ethers).JsonRpcProvider(CFG.rpcUrl);
+
+function setStatus(msg, cls) { const el = $('statusText'); el.innerHTML = msg || ''; el.className = 'status ' + (cls || ''); }
+function short(a) { return a ? a.slice(0, 6) + '...' + a.slice(-4) : ''; }
+function fmt(n, d = 4) { return Number(n).toLocaleString('en-US', { maximumFractionDigits: d }); }
+
+// ── Token dropdowns ─────────────────────────────────────────────────────────
+function renderTokenBtn(elId, sym) {
+  const t = TOKENS[sym];
+  $(elId).innerHTML = `<img src="${t.icon}" alt=""/> ${t.symbol} ▾`;
+}
+function buildMenu(menuId, btnId, current, onPick) {
+  const menu = $(menuId);
+  menu.innerHTML = '';
+  Object.keys(TOKENS).forEach((sym) => {
+    if (sym === current) return;
+    const b = document.createElement('button');
+    b.innerHTML = `<img src="${TOKENS[sym].icon}" alt=""/> ${sym}`;
+    b.onclick = () => { menu.classList.remove('open'); onPick(sym); };
+    menu.appendChild(b);
+  });
+  $(btnId).onclick = (e) => { e.stopPropagation(); menu.classList.toggle('open'); };
+}
+document.addEventListener('click', () => document.querySelectorAll('.menu').forEach((m) => m.classList.remove('open')));
+
+function applyPairFromUrl() {
+  const p = new URLSearchParams(location.search).get('pair');
+  if (!p) return;
+  const [f, t] = p.toUpperCase().split('-');
+  if (TOKENS[f] && TOKENS[t] && f !== t) { state.from = f; state.to = t; }
+}
+
+function refreshPairUI() {
+  renderTokenBtn('fromTokenBtn', state.from);
+  renderTokenBtn('toTokenBtn', state.to);
+  buildMenu('fromMenu', 'fromTokenBtn', state.from, (s) => { state.from = s; if (state.to === s) state.to = state.from === 'OBZ' ? 'USDT' : 'OBZ'; refreshPairUI(); onAmountChange(); });
+  buildMenu('toMenu', 'toTokenBtn', state.to, (s) => { state.to = s; if (state.from === s) state.from = state.to === 'OBZ' ? 'USDT' : 'OBZ'; refreshPairUI(); onAmountChange(); });
+}
+
+// ── Wallet ──────────────────────────────────────────────────────────────────
+async function getWalletConnectProvider() {
+  const { EthereumProvider } = await import('https://esm.sh/@walletconnect/ethereum-provider@2.17.0?bundle');
+  return EthereumProvider.init({
+    projectId: CFG.walletConnectProjectId,
+    chains: [CFG.chainId],
+    showQrModal: true,
+    methods: ['eth_sendTransaction', 'personal_sign'],
+    metadata: {
+      name: 'OBZ Exchange', description: 'OBZ Swap', url: 'https://obzexchange.com',
+      icons: ['https://raw.githubusercontent.com/obitza2565/ObitZa/main/exchange/obz-token.png'],
+    },
+  });
+}
+
+async function ensureChain(provider) {
+  const hex = '0x' + CFG.chainId.toString(16);
+  try {
+    await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hex }] });
+  } catch (e) {
+    if (e && e.code === 4902) {
+      await provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: hex, chainName: CFG.chainName, rpcUrls: [CFG.rpcUrl],
+          nativeCurrency: CFG.nativeCurrency, blockExplorerUrls: [CFG.explorer],
+        }],
+      });
+    } else { throw e; }
+  }
+}
+
+async function connectWallet() {
+  try {
+    setStatus('กำลังเชื่อมกระเป๋า...');
+    let raw = window.ethereum;
+    if (!raw) {
+      setStatus('ไม่พบส่วนขยาย — เปิด WalletConnect สำหรับ Trust Wallet...');
+      state.wcProvider = await getWalletConnectProvider();
+      await state.wcProvider.connect();
+      raw = state.wcProvider;
+    }
+    await ensureChain(raw);
+    const E6 = await E();
+    state.provider = new E6.BrowserProvider(raw);
+    state.signer = await state.provider.getSigner();
+    state.address = await state.signer.getAddress();
+    $('walletBtn').textContent = '✅ ' + short(state.address);
+    $('walletBtn').classList.add('connected');
+    setStatus('');
+    await refreshBalances();
+    await refreshQuota();
+  } catch (err) {
+    setStatus('เชื่อมกระเป๋าไม่สำเร็จ: ' + (err.message || err), 'err');
+  }
+}
+
+// ── Balances / quota / quote ────────────────────────────────────────────────
+async function balanceOf(sym) {
+  const E6 = await E();
+  if (!state.address) return null;
+  if (sym === 'BNB') return E6.formatEther(await state.provider.getBalance(state.address));
+  const c = new E6.Contract(TOKENS[sym].address, ERC20_ABI, readProvider());
+  return E6.formatEther(await c.balanceOf(state.address));
+}
+
+async function refreshBalances() {
+  try {
+    if (!state.address) return;
+    $('fromBal').textContent = fmt(await balanceOf(state.from));
+    $('toBal').textContent = fmt(await balanceOf(state.to));
+  } catch (_) { /* ignore */ }
+}
+
+async function refreshQuota() {
+  if (!CFG.feeRouter || !state.address) return;
+  try {
+    const E6 = await E();
+    const router = new E6.Contract(CFG.feeRouter, ROUTER_ABI, readProvider());
+    const q = await router.getQuota(state.address);
+    const used = Number(E6.formatEther(q.used));
+    const limit = Number(E6.formatEther(q.limit));
+    const pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+    $('quotaUsed').textContent = used.toFixed(2);
+    $('quotaLimit').textContent = fmt(limit, 0);
+    $('quotaFill').style.width = pct + '%';
+    $('quotaFill').classList.toggle('full', pct >= 100);
+    $('quotaLock').classList.toggle('show', q.remaining === 0n);
+    const secs = Number(q.resetsAt) - Math.floor(Date.now() / 1000);
+    if (secs > 0) {
+      const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+      const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+      $('quotaReset').textContent = `${h}:${m} ชม.`;
+    }
+  } catch (_) { /* quota read fails silently until contract deployed */ }
+}
+
+function buildPath(from, to) {
+  const a = from === 'BNB' ? WBNB : TOKENS[from].address;
+  const b = to === 'BNB' ? WBNB : TOKENS[to].address;
+  return [a, b];
+}
+
+async function onAmountChange() {
+  state.quote = null;
+  $('amountOut').value = '';
+  $('rateText').textContent = '-'; $('feeText').textContent = '-'; $('minText').textContent = '-';
+  const raw = $('amountIn').value;
+  const swapBtn = $('swapBtn');
+  swapBtn.disabled = true;
+  if (!raw || Number(raw) <= 0 || !CFG.feeRouter) { updateSwapButtonState(); return; }
+
+  try {
+    const E6 = await E();
+    const amountIn = E6.parseEther(raw);
+    const router = new E6.Contract(CFG.feeRouter, ROUTER_ABI, readProvider());
+    const q = await router.quoteSwap(amountIn, buildPath(state.from, state.to));
+    state.quote = q;
+
+    const outNum = Number(E6.formatEther(q.expectedOut));
+    const inNum = Number(raw);
+    $('amountOut').value = outNum.toFixed(6);
+    $('rateText').textContent = `1 ${state.from} ≈ ${fmt(outNum / inNum, 6)} ${state.to}`;
+    $('feeText').textContent = `${fmt(E6.formatEther(q.feeAmount), 6)} ${state.from} → กระเป๋าแพลตฟอร์ม`;
+    $('minText').textContent = `${(outNum * 0.995).toFixed(6)} ${state.to}`;
+
+    updateSwapButtonState();
+    await maybeShowApprove();
+  } catch (err) {
+    setStatus('ไม่สามารถประเมินราคาได้ — pool อาจยังไม่มีสภาพคล่อง (' + (err.shortMessage || err.message || err) + ')', 'err');
+  }
+}
+
+function updateSwapButtonState() {
+  const swapBtn = $('swapBtn');
+  const locked = $('quotaLock').classList.contains('show');
+  if (!CFG.feeRouter) { swapBtn.disabled = true; swapBtn.textContent = '⏳ รอ deploy คอนแทรกต์'; return; }
+  if (!state.address) { swapBtn.disabled = false; swapBtn.textContent = '🔗 เชื่อมกระเป๋าเพื่อ Swap'; return; }
+  if (locked) { swapBtn.disabled = true; swapBtn.textContent = '🔒 ล็อกโควตารายวัน'; return; }
+  if (!state.quote) { swapBtn.disabled = true; swapBtn.textContent = 'Swap'; return; }
+  swapBtn.disabled = false;
+  swapBtn.textContent = `🔁 Swap ${state.from} → ${state.to}`;
+}
+
+async function maybeShowApprove() {
+  const btn = $('approveBtn');
+  btn.style.display = 'none';
+  if (!state.address || !state.quote || state.from === 'BNB') return;
+  const E6 = await E();
+  const token = new E6.Contract(TOKENS[state.from].address, ERC20_ABI, state.provider);
+  const need = E6.parseEther($('amountIn').value || '0');
+  const allowance = await token.allowance(state.address, CFG.feeRouter);
+  if (allowance < need) {
+    btn.style.display = 'block';
+    $('approveToken').textContent = state.from;
+    btn.disabled = false;
+  }
+}
+
+$('approveBtn').onclick = async () => {
+  try {
+    const E6 = await E();
+    const token = new E6.Contract(TOKENS[state.from].address, ERC20_ABI, state.signer);
+    setStatus('กำลังอนุมัติ ' + state.from + '...');
+    $('approveBtn').disabled = true;
+    const tx = await token.approve(CFG.feeRouter, E6.MaxUint256);
+    await tx.wait();
+    setStatus('✅ อนุมัติแล้ว', 'ok');
+    $('approveBtn').style.display = 'none';
+  } catch (err) {
+    setStatus('Approve ไม่สำเร็จ: ' + (err.shortMessage || err.message || err), 'err');
+    $('approveBtn').disabled = false;
+  }
+};
+
+// ── Swap ────────────────────────────────────────────────────────────────────
+$('swapBtn').onclick = async () => {
+  if (!state.address) { await connectWallet(); return; }
+  if (!state.quote) return;
+  try {
+    const E6 = await E();
+    const router = new E6.Contract(CFG.feeRouter, ROUTER_ABI, state.signer);
+    const path = buildPath(state.from, state.to);
+    const deadline = Math.floor(Date.now() / 1000) + 1800;
+    const minOut = (state.quote.expectedOut * 995n) / 1000n;
+    const amountIn = E6.parseEther($('amountIn').value);
+
+    setStatus('กรุณายืนยันในกระเป๋า...');
+    $('swapBtn').disabled = true;
+
+    let tx;
+    if (state.from === 'BNB') {
+      tx = await router.swapExactETHForTokensWithFee(minOut, path, deadline, { value: amountIn });
+    } else if (state.to === 'BNB') {
+      tx = await router.swapExactTokensForETHWithFee(amountIn, minOut, path, deadline);
+    } else {
+      tx = await router.swapExactTokensForTokensWithFee(amountIn, minOut, path, deadline);
+    }
+    setStatus('กำลังยืนยันบนเชน... <a href="' + CFG.explorer + '/tx/' + tx.hash + '" target="_blank">ดู TX</a>');
+    await tx.wait();
+    setStatus('✅ Swap สำเร็จ! <a href="' + CFG.explorer + '/tx/' + tx.hash + '" target="_blank">' + short(tx.hash) + '</a>', 'ok');
+    $('amountIn').value = '';
+    await onAmountChange();
+    await refreshBalances();
+    await refreshQuota();
+  } catch (err) {
+    const msg = err.shortMessage || err.message || String(err);
+    if (String(msg).includes('daily swap limit')) {
+      setStatus('🔒 ระบบล็อกโควตา: เทรดครบ 10 USDT แล้ววันนี้', 'err');
+    } else {
+      setStatus('Swap ไม่สำเร็จ: ' + msg, 'err');
+    }
+    updateSwapButtonState();
+  }
+};
+
+$('flipBtn').onclick = () => {
+  const f = state.from; state.from = state.to; state.to = f;
+  refreshPairUI();
+  const v = $('amountIn').value;
+  $('amountIn').value = $('amountOut').value || '';
+  onAmountChange();
+};
+$('amountIn').addEventListener('input', () => {
+  clearTimeout(state.timer);
+  state.timer = setTimeout(onAmountChange, 350);
+});
+$('maxBtn').onclick = async () => {
+  const bal = await balanceOf(state.from);
+  if (bal) { $('amountIn').value = bal; onAmountChange(); }
+};
+$('walletBtn').onclick = connectWallet;
+
+// ── Init ────────────────────────────────────────────────────────────────────
+applyPairFromUrl();
+refreshPairUI();
+updateSwapButtonState();
+if (!CFG.feeRouter) {
+  setStatus('⚠️ คอนแทรกต์ Fee Router กำลัง deploy — ระบบจะพร้อมใช้งานเร็ว ๆ นี้', 'err');
+}
+setInterval(() => { if (state.address) refreshQuota(); }, 30000);
+</script>
+</body>
+</html>

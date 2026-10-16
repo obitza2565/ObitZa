@@ -572,12 +572,13 @@
   <div class="nav-links">
     <a href="#" id="navMarkets">Markets</a>
     <a href="#" id="navTrade">Trade</a>
+    <a href="swap.html">Swap</a>
     <a href="#" id="navEarn">Earn</a>
     <a href="#" id="navMining">Mining</a>
     <a href="#" id="navLearn">Learn</a>
   </div>
   <div class="nav-actions">
-    <div style="padding:6px 10px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.28);color:var(--green);font-size:11px;font-weight:800;letter-spacing:0.05em;">BSC TESTNET</div>
+    <div style="padding:6px 10px;border-radius:999px;background:rgba(242,198,76,0.12);border:1px solid rgba(242,198,76,0.35);color:var(--gold);font-size:11px;font-weight:800;letter-spacing:0.05em;">BNB CHAIN</div>
     <div class="lang-toggle" role="group" aria-label="Language settings">
       <button class="lang-chip active" type="button" id="langTh">ภาษาไทย</button>
       <button class="lang-chip" type="button" id="langEn">English</button>
@@ -636,9 +637,9 @@
       <div class="pc-chg dn">▼ -0.52%</div>
     </div>
     <div class="price-card">
-      <div class='pc-sym'>OBZ / USDT</div><div style='font-size:10px;color:var(--green);font-family:monospace;'>BSC Testnet ✓</div>
-      <div class="pc-val" id="hp-obz">$4.218</div>
-      <div class="pc-chg up">▲ +12.40%</div>
+      <div class='pc-sym'>OBZ / USDT</div><div style='font-size:10px;color:var(--green);font-family:monospace;'>BNB Chain ✓</div>
+      <div class="pc-val" id="hp-obz">$1.0000</div>
+      <div class="pc-chg up">Fixed</div>
     </div>
     <div class="price-card">
       <div class="pc-sym">SOL / USDT</div>
@@ -716,12 +717,12 @@
         </tr>
         <tr>
           <td style="color:var(--muted)">4</td>
-          <td><div class="pair-cell"><div class="pair-icon" style="font-size:14px;background:rgba(52,211,153,0.12)">OBZ</div><div><div class="pair-name">OBZ</div><div class="pair-base">OBZ Token</div></div></div></td>
-          <td class="price-val" id="row-obz">$4.218</td>
-          <td class="chg-cell up">+12.40%</td>
-          <td><div class="vol-bar-wrap">$112M<div class="vol-bar"><div class="vol-bar-fill" style="width:5%;"></div></div></div></td>
-          <td>$4.2B</td>
-          <td><a class="trade-link" href="trade.html">Trade</a></td>
+          <td><div class="pair-cell"><div class="pair-icon" style="font-size:14px;background:rgba(52,211,153,0.12);padding:0;border-radius:50%;"><img src="obz-token.svg" alt="OBZ" style="width:28px;height:28px;display:block;"/></div><div><div class="pair-name">OBZ</div><div class="pair-base">OBZ Token</div></div></div></td>
+          <td class="price-val" id="row-obz">$1.0000</td>
+          <td class="chg-cell up">Fixed</td>
+          <td><div class="vol-bar-wrap" id="row-obz-vol">—</div></td>
+          <td id="row-obz-mcap">—</td>
+          <td><a class="trade-link" href="swap.html?pair=USDT-OBZ">Swap</a></td>
         </tr>
         <tr>
           <td style="color:var(--muted)">5</td>
@@ -908,7 +909,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <div>© 2026 OBZ Exchange. All rights reserved. · <a href='https://testnet.bscscan.com/token/0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7' target='_blank' style='color:var(--cyan);'>OBZ Contract ✓</a></div>
+    <div>© 2026 OBZ Exchange. All rights reserved. · <a href='https://bscscan.com/token/0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7' target='_blank' style='color:var(--cyan);'>OBZ Contract ✓</a></div>
     <div class="social-links">
       <a href="#" title="Twitter">𝕏</a>
       <a href="#" title="Telegram">✈</a>
@@ -1044,8 +1045,8 @@
   const openWalletBtn = document.getElementById('openWalletBtn');
   const defaultStatusHtml = wStatus.innerHTML;
   const OBZ_TOKEN_ADDRESS = '0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7';
-  const BSC_TESTNET_RPC = 'https://data-seed-prebsc-1-s1.binance.org:8545/';
-  const BSC_TESTNET_CHAIN_ID = '0x61';
+  const BSC_RPC = (window.OBZ_CONFIG && window.OBZ_CONFIG.rpcUrl) || 'https://bsc-dataseed.binance.org/';
+  const BSC_CHAIN_ID = '0x38';
   const discoveredProviders = [];
   let activeProvider = null;
   let activeWalletName = '';
@@ -1200,7 +1201,7 @@
       params: [{ to: OBZ_TOKEN_ADDRESS, data }, 'latest'],
       id: Date.now()
     };
-    const res = await fetch(BSC_TESTNET_RPC, {
+    const res = await fetch(BSC_RPC, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -1222,21 +1223,21 @@
     }
   }
 
-  async function ensureBscTestnet(provider){
+  async function ensureBscMainnet(provider){
     if(!provider) return false;
     try {
-      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BSC_TESTNET_CHAIN_ID }] });
+      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BSC_CHAIN_ID }] });
       return true;
     } catch (err) {
       if(err && err.code === 4902){
         await provider.request({
           method: 'wallet_addEthereumChain',
           params: [{
-            chainId: BSC_TESTNET_CHAIN_ID,
-            chainName: 'BSC Testnet',
-            nativeCurrency: { name: 'tBNB', symbol: 'tBNB', decimals: 18 },
-            rpcUrls: [BSC_TESTNET_RPC],
-            blockExplorerUrls: ['https://testnet.bscscan.com']
+            chainId: BSC_CHAIN_ID,
+            chainName: 'BNB Smart Chain',
+            nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+            rpcUrls: [BSC_RPC],
+            blockExplorerUrls: ['https://bscscan.com']
           }]
         });
         return true;
@@ -1456,6 +1457,33 @@
     authSubmit.style.background='rgba(52,211,153,0.3)';
     setTimeout(closeAuth,1000);
   });
+
+  // ── OBZ market row: real on-chain data at fixed 1 OBZ = 1 USDT ──────────
+  (async function loadObzMarketStats(){
+    const cfg = window.OBZ_CONFIG || {};
+    const rpc = cfg.rpcUrl || 'https://bsc-dataseed.binance.org/';
+    async function ethCall(to, data){
+      const res = await fetch(rpc, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ jsonrpc:'2.0', method:'eth_call', params:[{ to, data }, 'latest'], id: 1 }) });
+      const j = await res.json();
+      return j.result && j.result !== '0x' ? BigInt(j.result) : null;
+    }
+    const fmtCompact = (n) => '$' + Number(n).toLocaleString('en-US', { notation:'compact', maximumFractionDigits: 2 });
+    try {
+      // totalSupply() → Market Cap = supply × $1 (fixed peg)
+      const supply = await ethCall(cfg.obzToken, '0x18160ddd');
+      if(supply !== null){
+        const el = document.getElementById('row-obz-mcap');
+        if(el) el.textContent = fmtCompact(Number(supply) / 1e18);
+      }
+      // todayVolumeUsdt() on the fee router → 24h volume (after router deploys)
+      if(cfg.feeRouter){
+        const vol = await ethCall(cfg.feeRouter, '0xd1482ce5'); // todayVolumeUsdt()
+        const el = document.getElementById('row-obz-vol');
+        if(el && vol !== null) el.textContent = fmtCompact(Number(vol) / 1e18) + ' /วัน';
+      }
+    } catch(_) { /* keep placeholders */ }
+  })();
 </script>
 <!-- ═══════════ OBZ AI ASSISTANT WIDGET ═══════════ -->
 <style>
@@ -1651,7 +1679,7 @@
     'ค่าธรรมเนียม|fee|fees': () => `<b>💰 OBZ Fee Structure</b><br><br><span class="ai-tag buy">Maker 0.02%</span> <span class="ai-tag sell">Taker 0.04%</span><br><br>🥇 <b>Starter:</b> 0.10% / 0.08%<br>💎 <b>Pro (hold 500 OBZ):</b> 0.04% / 0.02%<br>🏢 <b>Institutional:</b> 0.01% / 0.00%<br><br>ถือ OBZ token ลดค่าธรรมเนียมได้ถึง <b style="color:#34d399">60%</b>`,
     'wallet|connect': () => `<b>🔗 วิธี Connect Wallet</b><br><br>1️⃣ กดปุ่ม <b>"🔗 Wallet"</b> ที่ navbar<br>2️⃣ เลือก wallet ที่ต้องการ:<br>&nbsp;&nbsp;• 🦊 <b>MetaMask</b> — browser extension<br>&nbsp;&nbsp;• 🔵 <b>WalletConnect</b> — scan QR<br>&nbsp;&nbsp;• 👻 <b>Phantom</b> — Solana wallet<br>3️⃣ กด Approve ในแอป wallet<br>4️⃣ ✅ เชื่อมต่อสำเร็จ!<br><br>รองรับ EVM, Solana, Cosmos`,
     'coin|แนะนำ|ลงทุน|invest': () => `<b>🚀 Top Picks — Week of Aug 2026</b><br><br><span class="ai-tag buy">HIGH POTENTIAL</span><br><br>1. <b>OBZ</b> +12.4% — native token momentum<br>2. <b>SOL</b> +3.1% — ecosystem growth<br>3. <b>BTC</b> +2.4% — institutional buying<br><br><span class="ai-tag sell">CAUTION</span><br>4. <b>BNB</b> -1.0% — regulatory news<br><br><i style="color:#8baac4;font-size:12px;">⚠️ DYOR — ไม่ใช่คำแนะนำการลงทุน</i>`,
-    'obz': () => `<b>💎 OBZ Token</b><br><br>ราคา: <b style="color:#67e8f9">$4.218</b> <span class="ai-tag buy">+12.4%</span><br><br>🔥 <b>ประโยชน์ของ OBZ:</b><br>• ลดค่าธรรมเนียม 60%<br>• รับ Mining Rewards<br>• Governance voting<br>• Staking APY ~18%<br><br>Market Cap: <b>$4.2B</b> | Rank: #42`,
+    'obz': () => `<b>💎 OBZ Token</b><br><br>ราคา: <b style="color:#67e8f9">$1.0000</b> <span class="ai-tag buy">FIXED</span><br><br>🔥 <b>ประโยชน์ของ OBZ:</b><br>• ลดค่าธรรมเนียม 60%<br>• รับ Mining Rewards<br>• Governance voting<br>• Staking APY ~18%<br><br>1 OBZ = 1 USDT (fixed rate)`,
     'สมัคร|register|account|เปิดบัญชี': () => `<b>✅ สมัครสมาชิก OBZ</b><br><br>1. กดปุ่ม <b>"Get Started"</b> ด้านบน<br>2. กรอก Email + Password<br>3. Verify email<br>4. เริ่มเทรดได้ทันที!<br><br>⚡ ฟรี — ไม่มีค่าใช้จ่าย<br>🎁 รับ OBZ token <b>5 OBZ</b> ฟรีเมื่อสมัคร`,
     'default': (q) => `<b>🤖 AI Analysis</b><br><br>ผมได้รับคำถามเกี่ยวกับ "<b>${q}</b>"<br><br>สิ่งที่ผมช่วยได้:<br>• 📊 วิเคราะห์ราคา BTC, ETH, OBZ<br>• 💰 ข้อมูลค่าธรรมเนียม<br>• 🔗 วิธี connect wallet<br>• 🚀 แนะนำ coin น่าสนใจ<br>• 📖 วิธีใช้ platform<br><br>ลองถามใหม่อีกครั้งนะครับ 😊`
   };
