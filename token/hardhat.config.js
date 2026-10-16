@@ -26,8 +26,9 @@ module.exports = {
     },
     // BSC mainnet — OBZ token (0x5e18...9Bf7) lives here.
     // Needs PRIVATE_KEY (deployer holding real BNB for gas) in .env.
+    // Default RPC is publicnode (bsc-dataseed blocks POST from some IPs).
     bscMainnet: {
-      url: process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/",
+      url: process.env.BSC_RPC_URL || "https://bsc.publicnode.com",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 56,
     },

@@ -23,8 +23,9 @@ window.OBZ_CONFIG = {
   pancakeRouter: '0x10ED43C718714eb63d5aA57B78B54704E256024E',
 
   // ── OBZ Fee Router (1% platform fee + 10 USDT/day per-wallet limit) ──────
-  // Filled after deploying token/scripts/deploy-fee-router.js to mainnet.
-  feeRouter: '',
+  // Deployed on BSC mainnet: scripts/deploy-fee-router.js
+  // https://bscscan.com/address/0xDB9d0B031631F5E38652053aCCbB5E8b5c4A3B28
+  feeRouter: '0xDB9d0B031631F5E38652053aCCbB5E8b5c4A3B28',
   feeWallet: '0x41a0096ef2E784d574156Ddec32853B666C6dbE1',
   swapDailyLimitUsdt: 10,
   swapFeeBps: 100, // 1%
