@@ -266,8 +266,8 @@
       <div class="tb-pill" style="border-color:rgba(242,198,76,0.35);color:#f2c64c;background:rgba(242,198,76,0.12);">BNB CHAIN</div>
       <div class="lang-wrap">
         <select class="tb-btn lang-select" id="langSelect" aria-label="Language settings">
-          <option value="th" selected>ภาษาไทย</option>
-          <option value="en">English</option>
+          <option value="th">ภาษาไทย</option>
+          <option value="en" selected>English</option>
         </select>
       </div>
       <button class="tb-btn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy Contract</button>
@@ -437,8 +437,8 @@
         <div class="notice-banner" id="maintenanceNotice">
           <div class="notice-badge">NOTICE</div>
           <div>
-            <div class="notice-title" id="maintenanceNoticeTitle">คำเตือนเกี่ยวกับโหมดบำรุงรักษา</div>
-            <div class="notice-text" id="maintenanceNoticeText">เมื่อเปิดใช้งานโหมดบำรุงรักษา ระบบจะระงับการทำงานของ AI agents ทั้งหมดเป็นการชั่วคราว เพื่อความมั่นคงปลอดภัยระหว่างการปรับปรุงหรือแก้ไขระบบ การทำงานของผู้ใช้บางส่วนอาจถูกจำกัดจนกว่าจะยกเลิกโหมดดังกล่าว</div>
+            <div class="notice-title" id="maintenanceNoticeTitle">Maintenance Mode Notice</div>
+            <div class="notice-text" id="maintenanceNoticeText">When maintenance mode is enabled, all AI agents are temporarily disabled to keep the system safe during updates or fixes. Some user actions may be limited until the mode is turned off.</div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:14px;">
@@ -463,7 +463,7 @@
             <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--line);">
-            <div><div style="font-weight:700;font-size:13px;" id="maintenanceTitle">โหมดบำรุงรักษา</div><div style="font-size:11px;color:var(--muted)" id="maintenanceSubtitle">ระงับการทำงานของ AI agents ทั้งหมดชั่วคราว</div></div>
+            <div><div style="font-weight:700;font-size:13px;" id="maintenanceTitle">Maintenance Mode</div><div style="font-size:11px;color:var(--muted)" id="maintenanceSubtitle">Temporarily disable all AI agents</div></div>
             <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
           </div>
         </div>
@@ -526,7 +526,7 @@
         <table>
           <thead><tr><th>ID</th><th>Miner</th><th>Wallet</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
           <tbody id="payoutQueueBody">
-            <tr><td colspan="7" style="color:var(--muted)">ยังไม่มีข้อมูล</td></tr>
+            <tr><td colspan="7" style="color:var(--muted)">No data yet</td></tr>
           </tbody>
         </table>
         <div style="display:flex;justify-content:flex-end;margin-top:8px;">
@@ -536,12 +536,12 @@
         <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;">
           <div class="panel-head" style="margin-bottom:10px;">
             <h3>🧾 Payout Audit Log</h3>
-            <span class="tag cyan">ล่าสุด 120 รายการ</span>
+            <span class="tag cyan">Latest 120 entries</span>
           </div>
           <table>
             <thead><tr><th>Time</th><th>Req ID</th><th>Miner</th><th>Actor</th><th>Transition</th><th>Tx Hash</th><th>Note</th></tr></thead>
             <tbody id="payoutAuditBody">
-              <tr><td colspan="7" style="color:var(--muted)">ยังไม่มีข้อมูล</td></tr>
+              <tr><td colspan="7" style="color:var(--muted)">No data yet</td></tr>
             </tbody>
           </table>
           <div style="display:flex;justify-content:flex-end;margin-top:8px;">
@@ -698,12 +698,12 @@
 
   function copyTxHash(txHash){
     if(!txHash){
-      window.alert('ไม่มี tx hash ในรายการนี้');
+      window.alert('No tx hash in this row');
       return;
     }
     navigator.clipboard.writeText(txHash)
-      .then(() => window.alert('คัดลอก tx hash แล้ว'))
-      .catch(() => window.alert('คัดลอกไม่สำเร็จ'));
+      .then(() => window.alert('Tx hash copied'))
+      .catch(() => window.alert('Copy failed'));
   }
 
   function getRangeWindow(){
@@ -824,7 +824,7 @@
   async function loginAdminSession(){
     const key = document.getElementById('adminApiKey').value.trim();
     if(!key){
-      window.alert('กรอก Admin API Key ก่อน');
+      window.alert('Enter the Admin API Key first');
       return;
     }
     try {
@@ -841,7 +841,7 @@
       updateAdminSessionUi();
       refreshPayoutQueue();
     } catch (err) {
-      window.alert('Login session ไม่สำเร็จ: ' + err.message);
+      window.alert('Session login failed: ' + err.message);
     }
   }
 
@@ -849,7 +849,7 @@
     if(!isAdminSessionActive()){
       const ok = await tryAutoRelogin();
       if(!ok){
-        window.alert('ไม่มี session ให้ refresh กรุณา Login ใหม่');
+        window.alert('No session to refresh — please log in again');
         return;
       }
       refreshPayoutQueue();
@@ -863,7 +863,7 @@
       localStorage.setItem(PAYOUT_ADMIN_SESSION_EXP_KEY, String(adminSessionExpiresAt));
       updateAdminSessionUi();
     } catch (err) {
-      window.alert('Refresh session ไม่สำเร็จ: ' + err.message);
+      window.alert('Session refresh failed: ' + err.message);
     }
   }
 
@@ -884,8 +884,8 @@
     localStorage.removeItem(PAYOUT_ADMIN_SESSION_KEY);
     localStorage.removeItem(PAYOUT_ADMIN_SESSION_EXP_KEY);
     updateAdminSessionUi();
-    document.getElementById('payoutQueueBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ล็อกเอาต์แล้ว</td></tr>';
-    document.getElementById('payoutAuditBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ล็อกเอาต์แล้ว</td></tr>';
+    document.getElementById('payoutQueueBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">Logged out</td></tr>';
+    document.getElementById('payoutAuditBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">Logged out</td></tr>';
   }
 
   async function refreshPayoutSummary(){
@@ -919,7 +919,7 @@
       latestAuditRows = items.slice();
       body.innerHTML = '';
       if(!items.length){
-        body.innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ยังไม่มีข้อมูล</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" style="color:var(--muted)">No data yet</td></tr>';
         return;
       }
       items.forEach((row) => {
@@ -938,13 +938,13 @@
         body.appendChild(tr);
       });
     } catch (err) {
-      body.innerHTML = '<tr><td colspan="7" style="color:var(--red)">โหลด audit log ไม่สำเร็จ: ' + err.message + '</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" style="color:var(--red)">Failed to load audit log: ' + err.message + '</td></tr>';
     }
   }
 
   function exportQueueCsv(){
     if(!latestQueueRows.length){
-      window.alert('ไม่มีข้อมูล queue ให้ export');
+      window.alert('No queue data to export');
       return;
     }
     const rows = latestQueueRows.map((r) => [
@@ -962,7 +962,7 @@
 
   function exportAuditCsv(){
     if(!latestAuditRows.length){
-      window.alert('ไม่มีข้อมูล audit ให้ export');
+      window.alert('No audit data to export');
       return;
     }
     const rows = latestAuditRows.map((r) => [
@@ -985,7 +985,7 @@
     if(!isAdminSessionActive()){
       const reloginOk = await tryAutoRelogin();
       if(!reloginOk){
-        document.getElementById('payoutQueueBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">ล็อกอิน Admin Session ก่อน</td></tr>';
+        document.getElementById('payoutQueueBody').innerHTML = '<tr><td colspan="7" style="color:var(--muted)">Log in with an Admin Session first</td></tr>';
         updateAdminSessionUi();
         return;
       }

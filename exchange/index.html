@@ -580,8 +580,8 @@
   <div class="nav-actions">
     <div style="padding:6px 10px;border-radius:999px;background:rgba(242,198,76,0.12);border:1px solid rgba(242,198,76,0.35);color:var(--gold);font-size:11px;font-weight:800;letter-spacing:0.05em;">BNB CHAIN</div>
     <div class="lang-toggle" role="group" aria-label="Language settings">
-      <button class="lang-chip active" type="button" id="langTh">ภาษาไทย</button>
-      <button class="lang-chip" type="button" id="langEn">English</button>
+      <button class="lang-chip" type="button" id="langTh">ภาษาไทย</button>
+      <button class="lang-chip active" type="button" id="langEn">English</button>
     </div>
     <button class="btn-outline" id="openLogin">Log In</button>
     <button class="btn-primary" id="openRegister">Get Started</button>
@@ -1420,7 +1420,7 @@
     langTh.addEventListener('click', () => applyHomeLanguage('th'));
     langEn.addEventListener('click', () => applyHomeLanguage('en'));
   }
-  applyHomeLanguage('th');
+  applyHomeLanguage('en');
   syncConnectedAccount();
 
   /* ── auth modal ── */

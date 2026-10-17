@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -103,8 +103,8 @@
     <!-- FROM -->
     <div class="box">
       <div class="box-top">
-        <span>จาก (From)</span>
-        <span>ยอดคงเหลือ: <b id="fromBal">-</b> <button class="max-btn" id="maxBtn">MAX</button></span>
+        <span>From</span>
+        <span>Balance: <b id="fromBal">-</b> <button class="max-btn" id="maxBtn">MAX</button></span>
       </div>
       <div class="box-row">
         <input class="amt" id="amountIn" type="number" min="0" step="any" placeholder="0.0"/>
@@ -115,13 +115,13 @@
       </div>
     </div>
 
-    <div class="flip"><button id="flipBtn" title="สลับคู่">⇅</button></div>
+    <div class="flip"><button id="flipBtn" title="Switch pair">⇅</button></div>
 
     <!-- TO -->
     <div class="box">
       <div class="box-top">
-        <span>ได้รับ (To)</span>
-        <span>ยอดคงเหลือ: <b id="toBal">-</b></span>
+        <span>To</span>
+        <span>Balance: <b id="toBal">-</b></span>
       </div>
       <div class="box-row">
         <input class="amt" id="amountOut" type="text" readonly placeholder="0.0"/>
@@ -134,29 +134,29 @@
 
     <!-- DETAILS -->
     <div class="detail">
-      <div class="row"><span>อัตราแลกเปลี่ยน</span><b id="rateText">-</b></div>
-      <div class="row fee-row"><span>ค่าธรรมเนียมแพลตฟอร์ม (1%)</span><b id="feeText">-</b></div>
-      <div class="row"><span>รับขั้นต่ำ (slippage 0.5%)</span><b id="minText">-</b></div>
+      <div class="row"><span>Exchange rate</span><b id="rateText">-</b></div>
+      <div class="row fee-row"><span>Platform fee (1%)</span><b id="feeText">-</b></div>
+      <div class="row"><span>Minimum received (0.5% slippage)</span><b id="minText">-</b></div>
     </div>
 
     <!-- DAILY QUOTA -->
     <div class="quota">
       <div class="quota-top">
-        <span>โควตาเทรดวันนี้</span>
-        <span><b id="quotaUsed">0.00</b> / <b id="quotaLimit">10</b> USDT · รีเซ็ตใน <b id="quotaReset">--:--</b></span>
+        <span>Today's trading quota</span>
+        <span><b id="quotaUsed">0.00</b> / <b id="quotaLimit">10</b> USDT · resets in <b id="quotaReset">--:--</b></span>
       </div>
       <div class="quota-bar"><div class="quota-fill" id="quotaFill" style="width:0%"></div></div>
-      <div class="quota-lock" id="quotaLock">🔒 ระบบล็อกโควตา — คุณเทรดครบ 10 USDT แล้ววันนี้ กรุณารอรีเซ็ตเที่ยงคืน UTC</div>
+      <div class="quota-lock" id="quotaLock">🔒 Daily quota locked — you have reached the 10 USDT limit today. Quota resets at midnight UTC</div>
     </div>
 
-    <button class="approve-btn" id="approveBtn" style="display:none">🔓 อนุมัติ (Approve) <span id="approveToken"></span></button>
+    <button class="approve-btn" id="approveBtn" style="display:none">🔓 Approve <span id="approveToken"></span></button>
     <button class="swap-btn" id="swapBtn" disabled>Swap</button>
 
     <div class="status" id="statusText"></div>
 
     <div class="notice">
-      <b>หมายเหตุ:</b> ทุกธุรกรรมผ่าน OBZ Fee Router — หักค่าธรรมเนียม 1% เข้ากระเป๋าแพลตฟอร์ม
-      และจำกัด <b>10 USDT ต่อกระเป๋าต่อวัน</b> บังคับระดับสมาร์ทคอนแทรกต์บนเชน
+      <b>Note:</b> Every trade goes through the OBZ Fee Router — a 1% platform fee goes to the platform wallet,
+      and swaps are limited to <b>10 USDT per wallet per day</b>, enforced at the smart-contract level on-chain
     </div>
   </div>
 </div>
@@ -267,10 +267,10 @@ async function ensureChain(provider) {
 
 async function connectWallet() {
   try {
-    setStatus('กำลังเชื่อมกระเป๋า...');
+    setStatus('Connecting wallet...');
     let raw = window.ethereum;
     if (!raw) {
-      setStatus('ไม่พบส่วนขยาย — เปิด WalletConnect สำหรับ Trust Wallet...');
+      setStatus('No wallet extension found — opening WalletConnect for Trust Wallet...');
       state.wcProvider = await getWalletConnectProvider();
       await state.wcProvider.connect();
       raw = state.wcProvider;
@@ -286,7 +286,7 @@ async function connectWallet() {
     await refreshBalances();
     await refreshQuota();
   } catch (err) {
-    setStatus('เชื่อมกระเป๋าไม่สำเร็จ: ' + (err.message || err), 'err');
+    setStatus('Wallet connection failed: ' + (err.message || err), 'err');
   }
 }
 
@@ -325,7 +325,7 @@ async function refreshQuota() {
     if (secs > 0) {
       const h = String(Math.floor(secs / 3600)).padStart(2, '0');
       const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
-      $('quotaReset').textContent = `${h}:${m} ชม.`;
+      $('quotaReset').textContent = `${h}:${m} hr`;
     }
   } catch (_) { /* quota read fails silently until contract deployed */ }
 }
@@ -356,22 +356,22 @@ async function onAmountChange() {
     const inNum = Number(raw);
     $('amountOut').value = outNum.toFixed(6);
     $('rateText').textContent = `1 ${state.from} ≈ ${fmt(outNum / inNum, 6)} ${state.to}`;
-    $('feeText').textContent = `${fmt(E6.formatEther(q.feeAmount), 6)} ${state.from} → กระเป๋าแพลตฟอร์ม`;
+    $('feeText').textContent = `${fmt(E6.formatEther(q.feeAmount), 6)} ${state.from} → platform wallet`;
     $('minText').textContent = `${(outNum * 0.995).toFixed(6)} ${state.to}`;
 
     updateSwapButtonState();
     await maybeShowApprove();
   } catch (err) {
-    setStatus('ไม่สามารถประเมินราคาได้ — pool อาจยังไม่มีสภาพคล่อง (' + (err.shortMessage || err.message || err) + ')', 'err');
+    setStatus('Unable to get a price quote — the pool may have no liquidity yet (' + (err.shortMessage || err.message || err) + ')', 'err');
   }
 }
 
 function updateSwapButtonState() {
   const swapBtn = $('swapBtn');
   const locked = $('quotaLock').classList.contains('show');
-  if (!CFG.feeRouter) { swapBtn.disabled = true; swapBtn.textContent = '⏳ รอ deploy คอนแทรกต์'; return; }
-  if (!state.address) { swapBtn.disabled = false; swapBtn.textContent = '🔗 เชื่อมกระเป๋าเพื่อ Swap'; return; }
-  if (locked) { swapBtn.disabled = true; swapBtn.textContent = '🔒 ล็อกโควตารายวัน'; return; }
+  if (!CFG.feeRouter) { swapBtn.disabled = true; swapBtn.textContent = '⏳ Waiting for contract deployment'; return; }
+  if (!state.address) { swapBtn.disabled = false; swapBtn.textContent = '🔗 Connect wallet to Swap'; return; }
+  if (locked) { swapBtn.disabled = true; swapBtn.textContent = '🔒 Daily quota locked'; return; }
   if (!state.quote) { swapBtn.disabled = true; swapBtn.textContent = 'Swap'; return; }
   swapBtn.disabled = false;
   swapBtn.textContent = `🔁 Swap ${state.from} → ${state.to}`;
@@ -396,14 +396,14 @@ $('approveBtn').onclick = async () => {
   try {
     const E6 = await E();
     const token = new E6.Contract(TOKENS[state.from].address, ERC20_ABI, state.signer);
-    setStatus('กำลังอนุมัติ ' + state.from + '...');
+    setStatus('Approving ' + state.from + '...');
     $('approveBtn').disabled = true;
     const tx = await token.approve(CFG.feeRouter, E6.MaxUint256);
     await tx.wait();
-    setStatus('✅ อนุมัติแล้ว', 'ok');
+    setStatus('✅ Approved', 'ok');
     $('approveBtn').style.display = 'none';
   } catch (err) {
-    setStatus('Approve ไม่สำเร็จ: ' + (err.shortMessage || err.message || err), 'err');
+    setStatus('Approve failed: ' + (err.shortMessage || err.message || err), 'err');
     $('approveBtn').disabled = false;
   }
 };
@@ -420,7 +420,7 @@ $('swapBtn').onclick = async () => {
     const minOut = (state.quote.expectedOut * 995n) / 1000n;
     const amountIn = E6.parseEther($('amountIn').value);
 
-    setStatus('กรุณายืนยันในกระเป๋า...');
+    setStatus('Please confirm in your wallet...');
     $('swapBtn').disabled = true;
 
     let tx;
@@ -431,9 +431,9 @@ $('swapBtn').onclick = async () => {
     } else {
       tx = await router.swapExactTokensForTokensWithFee(amountIn, minOut, path, deadline);
     }
-    setStatus('กำลังยืนยันบนเชน... <a href="' + CFG.explorer + '/tx/' + tx.hash + '" target="_blank">ดู TX</a>');
+    setStatus('Confirming on-chain... <a href="' + CFG.explorer + '/tx/' + tx.hash + '" target="_blank">View TX</a>');
     await tx.wait();
-    setStatus('✅ Swap สำเร็จ! <a href="' + CFG.explorer + '/tx/' + tx.hash + '" target="_blank">' + short(tx.hash) + '</a>', 'ok');
+    setStatus('✅ Swap successful! <a href="' + CFG.explorer + '/tx/' + tx.hash + '" target="_blank">' + short(tx.hash) + '</a>', 'ok');
     $('amountIn').value = '';
     await onAmountChange();
     await refreshBalances();
@@ -441,9 +441,9 @@ $('swapBtn').onclick = async () => {
   } catch (err) {
     const msg = err.shortMessage || err.message || String(err);
     if (String(msg).includes('daily swap limit')) {
-      setStatus('🔒 ระบบล็อกโควตา: เทรดครบ 10 USDT แล้ววันนี้', 'err');
+      setStatus('🔒 Daily quota locked: you have reached the 10 USDT limit today', 'err');
     } else {
-      setStatus('Swap ไม่สำเร็จ: ' + msg, 'err');
+      setStatus('Swap failed: ' + msg, 'err');
     }
     updateSwapButtonState();
   }
@@ -471,7 +471,7 @@ applyPairFromUrl();
 refreshPairUI();
 updateSwapButtonState();
 if (!CFG.feeRouter) {
-  setStatus('⚠️ คอนแทรกต์ Fee Router กำลัง deploy — ระบบจะพร้อมใช้งานเร็ว ๆ นี้', 'err');
+  setStatus('⚠️ Fee Router contract is being deployed — the system will be ready soon', 'err');
 }
 setInterval(() => { if (state.address) refreshQuota(); }, 30000);
 </script>

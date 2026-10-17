@@ -196,7 +196,7 @@
   <div class="page-hero">
     <div class="shield-icon">🛡️</div>
     <h1>OBZ Exchange<br/><span>Security Center</span></h1>
-    <p>ระบบป้องกันการโจมตีหลายชั้น — DDoS, XSS, Injection, Man-in-the-Middle และ Phishing ทำงานตลอด 24/7</p>
+    <p>Multi-layer protection against attacks — DDoS, XSS, Injection, Man-in-the-Middle, and Phishing, operating 24/7</p>
     <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.28);color:var(--green);font-weight:700;font-size:14px;">
       <span style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse2 1.4s infinite;display:inline-block;"></span>
       Security Status: PROTECTED
@@ -298,43 +298,43 @@
   </div>
 
   <!-- PROTECTION LAYERS -->
-  <div class="panel-head" style="margin-bottom:16px;"><h3 style="font-size:1.1rem;font-weight:900;">🔒 ชั้นป้องกัน (Defense Layers)</h3></div>
+  <div class="panel-head" style="margin-bottom:16px;"><h3 style="font-size:1.1rem;font-weight:900;">🔒 Defense Layers</h3></div>
   <div class="grid-3">
     <div class="protect-card active">
       <div class="pc-status"><span class="tag green">● Active</span></div>
       <div class="pc-icon">☁️</div>
       <h4>Cloudflare DDoS Protection</h4>
-      <p>ป้องกัน DDoS Layer 3/4/7 — กรองการโจมตี bandwidth flood, SYN flood, HTTP flood อัตโนมัติ ไม่มีค่าใช้จ่าย</p>
+      <p>DDoS protection at Layer 3/4/7 — automatically filters bandwidth floods, SYN floods, and HTTP floods at no cost</p>
     </div>
     <div class="protect-card active">
       <div class="pc-status"><span class="tag green">● Active</span></div>
       <div class="pc-icon">🔐</div>
       <h4>HTTPS / TLS 1.3</h4>
-      <p>การเชื่อมต่อทุกจุดถูกเข้ารหัสด้วย TLS 1.3 — ป้องกัน Man-in-the-Middle, packet sniffing และ downgrade attack</p>
+      <p>Every connection is encrypted with TLS 1.3 — preventing Man-in-the-Middle attacks, packet sniffing, and downgrade attacks</p>
     </div>
     <div class="protect-card active">
       <div class="pc-status"><span class="tag green">● Active</span></div>
       <div class="pc-icon">🧱</div>
       <h4>Content Security Policy (CSP)</h4>
-      <p>บล็อก XSS injection, inline script ที่ไม่ได้รับอนุญาต และการโหลด resource จากแหล่งภายนอกที่ไม่ปลอดภัย</p>
+      <p>Blocks XSS injection, unauthorized inline scripts, and resource loading from untrusted external sources</p>
     </div>
     <div class="protect-card active">
       <div class="pc-status"><span class="tag green">● Active</span></div>
       <div class="pc-icon">🔒</div>
       <h4>HTTP Security Headers</h4>
-      <p>X-Frame-Options DENY, X-Content-Type-Options, HSTS preload, Referrer-Policy — ป้องกัน clickjacking และ MIME sniffing</p>
+      <p>X-Frame-Options DENY, X-Content-Type-Options, HSTS preload, Referrer-Policy — preventing clickjacking and MIME sniffing</p>
     </div>
     <div class="protect-card active">
       <div class="pc-status"><span class="tag green">● Active</span></div>
       <div class="pc-icon">🤖</div>
       <h4>AI Fraud Detection (OBZ-Epsilon)</h4>
-      <p>AI ตรวจสอบ pattern ที่ผิดปกติ, brute-force, credential stuffing และ bot activity แบบ real-time</p>
+      <p>AI detects abnormal patterns, brute-force attempts, credential stuffing, and bot activity in real time</p>
     </div>
     <div class="protect-card active">
       <div class="pc-status"><span class="tag cyan">● Monitoring</span></div>
       <div class="pc-icon">🌐</div>
       <h4>Cloudflare CDN + WAF</h4>
-      <p>Web Application Firewall กรอง SQL injection, path traversal และ OWASP Top 10 threats ก่อนถึง server</p>
+      <p>Web Application Firewall filters SQL injection, path traversal, and OWASP Top 10 threats before they reach the server</p>
     </div>
   </div>
 
@@ -416,7 +416,7 @@
 
     <div class="panel">
       <div class="panel-head"><h3>🔍 Security Scan</h3><span class="tag cyan">On-demand</span></div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">สแกนช่องโหว่ทั้ง 6 ชั้นของ OBZ Exchange ได้ทุกเวลา — ตรวจสอบ headers, TLS, CSP, open ports และ dependency vulnerabilities</p>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;">Scan all 6 defense layers of OBZ Exchange at any time — checks headers, TLS, CSP, open ports, and dependency vulnerabilities</p>
       <button class="scan-btn" id="scanBtn" onclick="runScan()">🔍 Run Security Scan</button>
       <div class="scan-progress" id="scanProgress">
         <div class="sp-bar"><div class="sp-fill" id="spFill"></div></div>

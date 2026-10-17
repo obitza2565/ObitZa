@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -63,7 +63,7 @@
   <div class="head">
     <div>
       <div class="title">🏆 Public Mining Leaderboard</div>
-      <div class="sub">จัดอันดับนักขุดตามยอด OBZ จริงจากระบบรวม</div>
+      <div class="sub">Miners ranked by real OBZ totals from the central system</div>
     </div>
     <div class="pill" id="onlinePill">Online: -</div>
   </div>
@@ -159,7 +159,7 @@
       tbody.innerHTML = '';
       if(!leaders.length){
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="8" class="muted">ยังไม่มีข้อมูลนักขุด</td>';
+        tr.innerHTML = '<td colspan="8" class="muted">No miner data yet</td>';
         tbody.appendChild(tr);
       } else {
         leaders.forEach((row) => {
@@ -184,7 +184,7 @@
       byId('onlinePill').textContent = 'Online: ' + Number(net.miners_online || 0);
       byId('statusText').textContent = 'Updated: ' + new Date().toLocaleTimeString('th-TH');
     } catch (err) {
-      byId('statusText').textContent = 'โหลดไม่สำเร็จ: ' + err.message;
+      byId('statusText').textContent = 'Failed to load: ' + err.message;
     }
   }
 

@@ -234,8 +234,8 @@
   <div class="top-actions">
     <span class="lang-label">Language</span>
     <div class="lang-toggle" role="group" aria-label="Language settings">
-      <button class="lang-chip active" type="button" id="langTh">ภาษาไทย</button>
-      <button class="lang-chip" type="button" id="langEn">English</button>
+      <button class="lang-chip" type="button" id="langTh">ภาษาไทย</button>
+      <button class="lang-chip active" type="button" id="langEn">English</button>
     </div>
     <span style="padding:4px 8px;border-radius:999px;background:rgba(242,198,76,0.12);border:1px solid rgba(242,198,76,0.35);color:#f2c64c;font-size:10px;font-weight:800;letter-spacing:0.05em;">BNB CHAIN</span>
     <button class="tbtn" onclick="navigator.clipboard.writeText('0x5e1834c8D1B50F0B9e13712CD9ed1d90892a9Bf7').then(()=>{const t=this.textContent;this.textContent='Copied ✓';setTimeout(()=>this.textContent=t,1400);});">Copy OBZ</button>
@@ -908,7 +908,7 @@
   if (langTh && langEn) {
     langTh.addEventListener('click', () => applyLang('th'));
     langEn.addEventListener('click', () => applyLang('en'));
-    applyLang('th');
+    applyLang('en');
   }
 })();
 </script>
