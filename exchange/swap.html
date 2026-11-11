@@ -96,7 +96,7 @@
 <div class="wrap">
   <div class="swap-card">
     <div class="swap-head">
-      <div class="swap-title"><img src="obz-token.svg" alt="OBZ"/> Swap</div>
+      <div class="swap-title"><img src="https://raw.githubusercontent.com/obitza2565/ObitZa/main/exchange/obz-token.png" alt="OBZ"/> Swap</div>
       <button class="wallet-btn" id="walletBtn">🔗 Connect Wallet</button>
     </div>
 
@@ -170,7 +170,7 @@ let ethers;
 async function E() { return ethers || (ethers = await import('https://esm.sh/ethers@6.13.2?bundle')); }
 
 const TOKENS = {
-  OBZ:  { symbol: 'OBZ',  address: CFG.obzToken,  icon: 'obz-token.svg', decimals: 18 },
+  OBZ:  { symbol: 'OBZ',  address: CFG.obzToken,  icon: 'https://raw.githubusercontent.com/obitza2565/ObitZa/main/exchange/obz-token.png', decimals: 18 },
   USDT: { symbol: 'USDT', address: CFG.usdtToken, icon: 'usdt.svg',       decimals: 18 },
   BNB:  { symbol: 'BNB',  address: 'native',      icon: 'bnb.svg',       decimals: 18 },
 };
