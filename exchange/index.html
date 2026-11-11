@@ -167,6 +167,8 @@
     }
     .price-card:hover { transform: translateY(-3px); border-color: rgba(103,232,249,0.36); }
     .price-card .pc-sym { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .price-card .pc-sym.obz-symbol { display:flex; align-items:center; gap:7px; }
+    .price-card .pc-sym.obz-symbol img { width:22px; height:22px; object-fit:contain; }
     .price-card .pc-val { font-size: 1.2rem; font-weight: 800; color: var(--text); }
     .price-card .pc-chg { font-size: 12px; font-weight: 700; margin-top: 4px; }
     .price-card .pc-chg.up { color: var(--green); }
@@ -637,7 +639,7 @@
       <div class="pc-chg dn">▼ -0.52%</div>
     </div>
     <div class="price-card">
-      <div class='pc-sym'>OBZ / USDT</div><div style='font-size:10px;color:var(--green);font-family:monospace;'>BNB Chain ✓</div>
+      <div class='pc-sym obz-symbol'><img src="obz-token.svg" alt="OBZ token logo"/> OBZ / USDT</div><div style='font-size:10px;color:var(--green);font-family:monospace;'>BNB Chain ✓</div>
       <div class="pc-val" id="hp-obz">$1.0000</div>
       <div class="pc-chg up">Fixed</div>
     </div>
@@ -979,16 +981,13 @@
 
 <script>
   /* ── live prices ── */
-  let btcPrice = 61420.18, obzPrice = 4.218;
+  let btcPrice = 61420.18;
   function tick() {
     btcPrice += (Math.random() - 0.495) * 40;
-    obzPrice += (Math.random() - 0.49) * 0.04;
     const fmt = (v, d=2) => '$' + v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
     document.getElementById('t-btc').textContent = fmt(btcPrice);
     document.getElementById('hp-btc').textContent = fmt(btcPrice);
     document.getElementById('row-btc').textContent = fmt(btcPrice);
-    document.getElementById('hp-obz').textContent = fmt(obzPrice,3);
-    document.getElementById('row-obz').textContent = fmt(obzPrice,3);
   }
   setInterval(tick, 1600);
 
@@ -1066,8 +1065,7 @@
         const { EthereumProvider } = await import('https://esm.sh/@walletconnect/ethereum-provider@2.17.0?bundle');
         return EthereumProvider.init({
           projectId: WALLETCONNECT_PROJECT_ID,
-          chains: [97],
-          optionalChains: [56],
+          chains: [56],
           showQrModal: true,
           methods: ['eth_sendTransaction', 'personal_sign', 'eth_sign', 'eth_signTypedData'],
           metadata: {
@@ -1390,11 +1388,11 @@
           return;
         }
 
-        showStatus(`Preparing ${activeWalletName} for OBZ on BSC Testnet...`);
+        showStatus(`Preparing ${activeWalletName} for OBZ on BNB Smart Chain...`);
         try {
-          await ensureBscTestnet(activeProvider);
+          await ensureBscMainnet(activeProvider);
         } catch {
-          showStatus('Please switch your wallet network to BSC Testnet and try again.');
+          showStatus('Please switch your wallet network to BNB Smart Chain and try again.');
           return;
         }
 
@@ -1746,6 +1744,5 @@
 <!-- ═══════════ END OBZ AI ASSISTANT WIDGET ═══════════ -->
 </body>
 </html>
-
 
 
