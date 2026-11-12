@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">OBZ Token Gold Coin</title>
   <desc id="desc">Front-facing 3D-style gold crypto coin. A thick polished gold ring letter O engraved with OBZ TOKEN and OBZ-POOL, with large bold letters BZ in the center.</desc>
   <defs>
@@ -47,9 +47,6 @@
       <feComposite in2="shadow" operator="in"/>
       <feComposite in2="SourceGraphic" operator="over"/>
     </filter>
-    <!-- Circular paths for rim engraving (centered ring radius ~188) -->
-    <path id="rimTopArc" d="M 68,256 A 188,188 0 0 1 444,256" fill="none"/>
-    <path id="rimBottomArc" d="M 444,256 A 188,188 0 0 1 68,256" fill="none"/>
   </defs>
 
   <g filter="url(#coinShadow)">
@@ -68,16 +65,25 @@
     <circle cx="256" cy="256" r="160" fill="url(#faceMatte)" stroke="#7a4503" stroke-width="4"/>
     <circle cx="256" cy="256" r="152" fill="none" stroke="#ffe98a" stroke-width="2" opacity="0.7"/>
 
-    <!-- Engraved rim text: OBZ TOKEN (top arc, upright) -->
-    <text font-family="Arial, sans-serif" font-size="26" font-weight="800"
-          letter-spacing="8" fill="#6b3d04" opacity="0.95">
-      <textPath href="#rimTopArc" startOffset="50%" text-anchor="middle">OBZ TOKEN</textPath>
-    </text>
-    <!-- Engraved rim text: OBZ-POOL (bottom arc, upright) -->
-    <text font-family="Arial, sans-serif" font-size="26" font-weight="800"
-          letter-spacing="8" fill="#6b3d04" opacity="0.95">
-      <textPath href="#rimBottomArc" startOffset="50%" text-anchor="middle">OBZ-POOL</textPath>
-    </text>
+    <!-- Engraved rim lettering uses positioned glyphs for consistent raster rendering. -->
+    <g font-family="Arial, sans-serif" font-size="20" font-weight="800" fill="#6b3d04" opacity="0.95" text-anchor="middle" dominant-baseline="middle">
+      <text x="140.3" y="107.9" transform="rotate(-38 140.3 107.9)">O</text>
+      <text x="164.9" y="92" transform="rotate(-29 164.9 92)">B</text>
+      <text x="191.7" y="79.3" transform="rotate(-20 191.7 79.3)">Z</text>
+      <text x="256" y="68" transform="rotate(0 256 68)">T</text>
+      <text x="291.8" y="71.5" transform="rotate(11 291.8 71.5)">O</text>
+      <text x="320.3" y="79.3" transform="rotate(20 320.3 79.3)">K</text>
+      <text x="347.1" y="92" transform="rotate(29 347.1 92)">E</text>
+      <text x="371.7" y="107.9" transform="rotate(38 371.7 107.9)">N</text>
+      <text x="140.3" y="404.1" transform="rotate(38 140.3 404.1)">O</text>
+      <text x="168" y="422.3" transform="rotate(28 168 422.3)">B</text>
+      <text x="197.9" y="435.1" transform="rotate(18 197.9 435.1)">Z</text>
+      <text x="229.8" y="442.3" transform="rotate(8 229.8 442.3)">-</text>
+      <text x="282.2" y="442.3" transform="rotate(-8 282.2 442.3)">P</text>
+      <text x="314.1" y="435.1" transform="rotate(-18 314.1 435.1)">O</text>
+      <text x="344" y="422.3" transform="rotate(-28 344 422.3)">O</text>
+      <text x="371.7" y="404.1" transform="rotate(-38 371.7 404.1)">L</text>
+    </g>
 
     <!-- Small star separators on rim sides -->
     <text x="52" y="266" font-family="Georgia, serif" font-size="26" fill="#8a5205" text-anchor="middle">★</text>
